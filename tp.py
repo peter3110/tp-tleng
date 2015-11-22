@@ -70,14 +70,14 @@ def recorrer(t,tactual):    # primer recorrido top-down (rellenar tam) + recorri
   t['attr']['h2'] = 0    
 
   if ( 'DIVIDE' in t.keys() ):
-    t['attr']['tam'] = tactual * 1.2        # esto no se si esta bien. no depende de nom y denom ?
+    t['attr']['tam'] = tactual * 2        # esto no se si esta bien. no depende de nom y denom ?
     elems = t.get('DIVIDE')
     nominador = recorrer(elems[0], tactual).copy()
     denominador = recorrer(elems[1], tactual).copy()
-    ancho_divide = max(nominador['attr']['a'], denominador['attr']['a']) * 1.2
+    ancho_divide = max(nominador['attr']['a'], denominador['attr']['a']) * 1
     nominador['attr']['a'] = ancho_divide
     denominador['attr']['a'] = ancho_divide
-    t['attr']['a'] = ancho_divide
+    t['attr']['a'] = ancho_divide * 0.6    # AGREGO CTE. = 0.6 para emparejar con denominador / nominador- OK
     t['attr']['h1'] = tactual * 0.1
     t['attr']['h2'] = - tactual * 0.1 - denominador['attr']['tam']
 
@@ -87,7 +87,10 @@ def recorrer(t,tactual):    # primer recorrido top-down (rellenar tam) + recorri
     for elem in t.get('CONCAT'): 
         h = recorrer(elem, tactual).copy()
         ancho_concat += h['attr']['a']
+        t['attr']['tam'] = max(t['attr']['tam'], h['attr']['tam'])  # ACTUALIZO EL TAMANNO DE LA CONCATENACION
     t['attr']['a'] = ancho_concat
+    t['attr']['h1'] = 0
+    t['attr']['h2'] = 0
   
   if ('SUPERINDEX' in t.keys() ):
     t['attr']['tam'] = 1.7 * tactual
@@ -95,6 +98,8 @@ def recorrer(t,tactual):    # primer recorrido top-down (rellenar tam) + recorri
     h1 = recorrer(elems[0], tactual).copy()
     h2 = recorrer(elems[1], tactual * 0.7).copy()
     t['attr']['a'] = h1['attr']['a'] + h2['attr']['a']
+    t['attr']['h1'] = 0
+    t['attr']['h2'] = 0
 
   if ('SUBINDEX' in t.keys() ):
     t['attr']['tam'] = 1.7 * tactual
@@ -102,6 +107,8 @@ def recorrer(t,tactual):    # primer recorrido top-down (rellenar tam) + recorri
     h1 = recorrer(elems[0], tactual).copy()
     h2 = recorrer(elems[1], tactual * 0.7).copy()
     t['attr']['a'] = h1['attr']['a'] + h2['attr']['a']
+    t['attr']['h1'] = 0
+    t['attr']['h2'] = 0
 
   if ('SUPERSUBINDEX' in t.keys() ):
     t['attr']['tam'] = 1.7 * tactual
@@ -127,7 +134,7 @@ def recorrer(t,tactual):    # primer recorrido top-down (rellenar tam) + recorri
     t['attr']['tam'] = tactual
     elems = t.get('()')
     recorrer(elems[0],tactual)
-    t['attr']['a'] = t['attr']['tam'] + 0.1 # por los "()"
+    t['attr']['a'] = t['attr']['tam']
     t['attr']['h1'] = 0
     t['attr']['h2'] = 0
 
@@ -147,9 +154,9 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
 
     if ( 'DIVIDE' in t.keys() ):
         elems = t.get('DIVIDE')
-        h1 = recorrer2(elems[0], x, t['attr']['y'] + elems[0]['attr']['tam'] * 0.5 ).copy()   # aca entran h1 y h2 en juego
+        h1 = recorrer2(elems[0], x, t['attr']['y'] + t['attr']['h1'] ).copy()   # aca entran h1 y h2 en juego
 
-        recorrer2(elems[1], x, t['attr']['y'] - elems[1]['attr']['tam'] ) ## REVISAR (elems[0] o [1] ?)
+        recorrer2(elems[1], x, t['attr']['y'] - elems[1]['attr']['tam'] * 0.7)
 
     if ( '()' in t.keys() ):
         elems = t.get('()')
@@ -158,44 +165,147 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
     if ( 'CONCAT' in t.keys() ):
         elems = t.get('CONCAT')
         recorrer2(elems[0], x, y)
-        recorrer2(elems[1], x + elems[0]['attr']['a'], y)
+        recorrer2(elems[1], x + elems[0]['attr']['a'] * 0.6 , y)      # AGREGO CTE = 0.6 PARA DESPLAZAR A DERECHA  - OK
 
     if ( 'SUPERINDEX' in t.keys() ):
         elems = t.get('SUPERINDEX')
         h1 = recorrer2(elems[0], x, y).copy()
-        recorrer2(elems[1], x + elems[0]['attr']['a'], y + 0.5 * h1['attr']['tam'])
+        recorrer2(elems[1], x + elems[0]['attr']['a'] * 0.6, y + 0.5 * h1['attr']['tam'])
 
 
     if ( 'SUBINDEX' in t.keys() ):
         elems = t.get('SUBINDEX')
         h1 = recorrer2(elems[0], x, y).copy()
-        recorrer2(elems[1], x + elems[0]['attr']['a'], y - 0.5 * h1['attr']['tam'])
+        recorrer2(elems[1], x + elems[0]['attr']['a'] * 0.6, y - 0.5 * h1['attr']['tam'])   # ESTE 0.3 ES SUPER ARBITRARIO
 
     if ( 'SUPERSUBINDEX' in t.keys() ):
         elems = t.get('SUPERSUBINDEX')
         h1 = recorrer2(elems[0], x, y).copy()
-        recorrer2(elems[1], x + elems[0]['attr']['a'], y + 0.5 * h1['attr']['tam'])
-        recorrer2(elems[2], x + elems[0]['attr']['a'], y - 0.5 * h1['attr']['tam'])
+        recorrer2(elems[1], x + elems[0]['attr']['a'] * 0.6, y + 0.5 * h1['attr']['tam'])
+        recorrer2(elems[2], x + elems[0]['attr']['a'] * 0.6, y - 0.5 * h1['attr']['tam'])
 
     if ( 'SUBSUPERINDEX' in t.keys() ):
         elems = t.get('SUBSUPERINDEX')
         h1 = recorrer2(elems[0], x, y).copy()
-        recorrer2(elems[1], x + elems[0]['attr']['a'], y - 0.5 * h1['attr']['tam'])
-        recorrer2(elems[2], x + elems[0]['attr']['a'], y + 0.5 * h1['attr']['tam'])
+        recorrer2(elems[1], x + elems[0]['attr']['a'] * 0.6, y - 0.5 * h1['attr']['tam'])
+        recorrer2(elems[2], x + elems[0]['attr']['a'] * 0.6, y + 0.5 * h1['attr']['tam'])
 
 
     return t
 
 
 
-# === Esto es para parsear la cadena ==== ?
+# === Parseo ====
+
+def make_text(x,y,tam,char):
+  return '''<text x="''' + x + '''" y="''' + y + '''" font-size="''' + tam + '''">''' + char + '''</text>'''
+
+def make_line(x1,y1,x2,y2,ancho):
+  return '''<line x1="''' + x1 + '''" y1="''' + y1 + '''" x2="''' + x2 + '''" y2="''' + y2 + '''" stroke-width="''' + ancho + '''" stroke="black"/>'''
+
+def make_open_paren(x,y,tam,t1,t2,s1,s2):
+  return '''<text x="''' + x + '''" y="''' + y + '''" font-size="''' + tam + '''" transform="translate(''' + t1 + ''',''' + t2 + ''') scale(''' + s1 + ''',''' + s2 + ''')">(</text>'''
+
+def make_close_paren(x,y,tam,t1,t2,s1,s2):
+  return '''<text x="''' + x + '''" y="''' + y + '''" font-size="''' + tam + '''" transform="translate(''' + t1 + ''',''' + t2 + ''') scale(''' + s1 + ''',''' + s2 + ''')">)</text>'''
+
+
+def recorrer3(t, out):
+  #out.append( make_text('0.69','0', '1', 'A') )
+  #out.append( make_text('1.29','0', '1', 'B') )
+
+  if ( 'DIVIDE' in t.keys() ):
+    elems = t.get('DIVIDE')
+    recorrer3(elems[0], out)
+
+    out.append( make_line(str(t['attr']['x']), str(-t['attr']['y']), 
+                          str(t['attr']['x'] + t['attr']['a']), str(-t['attr']['y']), '0.03') )  # harcodeo el ancho de la linea de division
+    
+    recorrer3(elems[1], out)
+
+  if ( 'ID' in t.keys() ):
+    out.append ( make_text(str(t['attr']['x']), str(-t['attr']['y']),   # me muevo al reves sobre el eje y
+                           str(t['attr']['tam']), str(t['ID']) ) )
+
+  if ( 'CONCAT' in t.keys() ):
+    elems = t.get('CONCAT')
+    recorrer3(elems[0], out)
+    recorrer3(elems[1], out)
+
+  if ( 'SUPERINDEX' in t.keys() ):
+    elems = t.get('SUPERINDEX')
+    recorrer3(elems[0], out)
+    recorrer3(elems[1], out)
+
+  if ( 'SUBINDEX' in t.keys() ):
+    elems = t.get('SUBINDEX')
+    recorrer3(elems[0], out)
+    recorrer3(elems[1], out)
+
+  if ( 'SUPERSUBINDEX' in t.keys() ):
+    elems = t.get('SUPERSUBINDEX')
+    recorrer3(elems[0], out)
+    recorrer3(elems[1], out)
+    recorrer3(elems[2], out)
+
+  if ( 'SUBSUPERINDEX' in t.keys() ):
+    elems = t.get('SUBSUPERINDEX')
+    recorrer3(elems[0], out)
+    recorrer3(elems[1], out)
+    recorrer3(elems[2], out)
+
+
+  # No esta andando por ahora
+  if ( '()' in t.keys() ):
+    elems = t.get('()')
+    #out.append ( make_open_paren(str(elems[0]['attr']['x']), str(elems[0]['attr']['y']), str(elems[0]['attr']['tam']), 
+    #                  str(0),str(1.3),str(1),str(2.4)) )
+    recorrer3(elems[0], out)
+    #out.append ( make_close_paren(str(elems[0]['attr']['x']), str(elems[0]['attr']['y']), str(elems[0]['attr']['tam']), 
+    #                  str(0),str(1.3),str(1),str(2.4)) )
+
+
+
+# ejemplo del tp: (A^BC^D/E^F_G+H)-I
+''' 
+        <text x="0" y="0" font-size="1" transform= 
+              "translate(0, 1.36875) scale(1,2.475)">(</text>
+        <text x=".69" y=".53" font-size="1">A</text>
+        <text x="1.29" y=".08" font-size=".7">B</text>
+        <text x="1.71" y=".53" font-size="1">C</text>
+        <text x="2.31" y=".08" font-size=".7">D</text>
+        <line x1="0.6" y1="0.72" x2="2.82" y2=".72" 
+              stroke-width="0.03" stroke="black"/>
+        <text x="0.6" y="1.68" font-size="1">E</text>
+        <text x="1.2" y="1.93" font-size=".7">G</text> 
+        <text x="1.2" y="1.23" font-size=".7">F</text>
+        <text x="1.62" y="1.68" font-size="1">+</text>
+        <text x="2.22" y="1.68" font-size="1">H</text>
+        <text x="0" y="0" font-size="1" transform =
+              "translate(2.82, 1.36875) scale(1,2.475)">)</text>
+        <text x="3.42" y="1" font-size="1">-</text>
+        <text x="4.02" y="1" font-size="1">I</text>
+    '''
 
 def p_expression_init(p):
     'S : E'
     res1 = recorrer(p[1],1)     # agrego todos los atributos menos x e y
-    res2 = recorrer2(res1,0,0)  # agrego x e y
+    res2 = recorrer2(res1,0.5,0)  # agrego x e y
     pp = pprint.PrettyPrinter(indent=1)
     pp.pprint(res2)
+
+    out = []
+    out.append ( '''<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"> <svg xmlns="http://www.w3.org/2000/svg" version="1.1"> <g transform="translate(0, 200) scale(200)" font-family= "Courier">''' )
+
+    # recorro el arbol y voy agregando lineas al output segun corresponda
+    
+    recorrer3(res2, out)
+
+    # fin
+    out.append ( '''</g>
+                    </svg> ''' )
+    open('test.svg','w').write(''.join(out))
+    print out
 
 # E -> E / A | A
 def p_expression_E1(p):
@@ -263,7 +373,7 @@ parser = yacc.yacc()
 
 while True:
    try:
-       s = raw_input('calc > ')
+       s = raw_input('cadena > ')
    except EOFError:
        break
    if not s: continue
