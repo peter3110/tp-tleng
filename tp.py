@@ -26,7 +26,7 @@ t_RPAREN  = r'\)'
 t_LBRACKET = r'\{'
 t_RBRACKET = r'\}'
 t_SUPERINDEX = r'\^'
-t_SUBINDEX = r'\-'  # TODO: no entiendo por que, NO ANDA con el guion bajo: _ 
+t_SUBINDEX = r'_'  # TODO: no entiendo por que, NO ANDA con el guion bajo: _ 
 def t_ID(t):
     r'[a-zA-Z+]'    # TODO: esto podria ser cualquier simbolo en realidad Faltan agregar muchos simbolos
     t.value = t.value  
