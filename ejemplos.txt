@@ -8,7 +8,14 @@ abc/{e/f}
 abc/a
 a/abc
 
-abc/a/cdef
+abc/a/cdefg
 
 (A^BC^D/E^F_G+H)-I
 abc/({e/f})
+
+abc/({e/f}+a)
+
+abc+{d/e}-fgh
+
+(A_B^C)
+
