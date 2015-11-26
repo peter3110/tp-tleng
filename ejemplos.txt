@@ -9,3 +9,6 @@ abc/a
 a/abc
 
 abc/a/cdef
+
+(A^BC^D/E^F_G+H)-I
+abc/({e/f})

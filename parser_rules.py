@@ -119,12 +119,14 @@ def recorrer(t,tactual):    # primer recorrido top-down (rellenar tam) +++ recor
     t['attr']['h1'] = denominador['attr']['tam']
     t['attr']['h2'] = nominador['attr']['tam']
 
+    t['attr']['tam'] = nominador['attr']['tam'] + denominador['attr']['tam']
+
   if ('()' in t.keys() ):
     # t['attr']['tam'] = tactual    # este valor se lo pongo en la primera recorrida. en la 2da, lo modifico ( ? )
     elems = t.get('()')
     recorrer(elems[0],tactual)
     t['attr']['tam'] = elems[0]['attr']['tam']
-    t['attr']['a'] = elems[0]['attr']['a'] * 1.05  # doy un margen a izq y derecha
+    t['attr']['a'] = elems[0]['attr']['a'] + 0.6  # doy un margen a izq y derecha
     t['attr']['h1'] = elems[0]['attr']['h1']
     t['attr']['h2'] = elems[0]['attr']['h2']
 
@@ -135,7 +137,7 @@ def recorrer(t,tactual):    # primer recorrido top-down (rellenar tam) +++ recor
         h = recorrer(elem, tactual).copy()
         ancho_concat += h['attr']['a']
         t['attr']['tam'] = max(t['attr']['tam'], h['attr']['tam'])  # ACTUALIZO EL TAMANNO DE LA CONCATENACION
-        t['attr']['h1'] = max(t['attr']['h1'], h['attr']['h1'])  # ACTUALIZO EL TAMANNO DE LA CONCATENACION
+        t['attr']['h1'] = max(t['attr']['h1'], h['attr']['h1']) # ACTUALIZO EL TAMANNO DE LA CONCATENACION
         t['attr']['h2'] = max(t['attr']['h2'], h['attr']['h2'])  # ACTUALIZO EL TAMANNO DE LA CONCATENACION
     t['attr']['a'] = ancho_concat
 
@@ -194,7 +196,7 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
     if ( 'DIVIDE' in t.keys() ):
         elems = t.get('DIVIDE')
 
-        t['attr']['y'] = y + 0.3
+        # t['attr']['y'] = y + 0.3
 
         num_x = x
         den_x = x
@@ -216,7 +218,7 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
         elems = t.get('()')
         t['attr']['tam'] = elems[0]['attr']['tam']    # a '()' le pongo = tamanno que lo que hay adentro
 
-        recorrer2(elems[0], x, y)   # faltaria desplazarse un poco por el '(' ?
+        recorrer2(elems[0], x + 0.3 , y)   # faltaria desplazarse un poco por el '(' ?
 
 
     if ( 'CONCAT' in t.keys() ):
@@ -225,16 +227,26 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
         tam_0 = elems[0]['attr']['tam']
         tam_1 = elems[1]['attr']['tam']
 
-        dif = tam_1 - tam_0
-        if (dif > 0):
-            y_0 = y
-            y_1 = y
-        else:
-            y_0 = y
-            y_1 = y
+        y_0 = y
+        y_1 = y
+
+        # FALTA NIVELAR EL Y CUANDO TENEMOS DIVISIONES
+        # if( ('DIVIDE' in elems[0].keys()) and ('DIVIDE' not in elems[1].keys())  ):
+        #     y_1 = y - 0.3
+        #     recorrer2(elems[0], x, y)
+        #     recorrer2(elems[1], x + elems[0]['attr']['a'] , y_1)
+        # elif( ('DIVIDE' in elems[1].keys()) and ('DIVIDE' not in elems[0].keys())  ):
+        #     y_0 = y - 0.3
+        #     recorrer2(elems[0], x, y_0)
+        #     recorrer2(elems[1], x + elems[0]['attr']['a'] , y)
+        # else:
+        #     recorrer2(elems[0], x, y_0)
+        #     recorrer2(elems[1], x + elems[0]['attr']['a'] , elems[0]['attr']['y'])
 
         recorrer2(elems[0], x, y_0)
         recorrer2(elems[1], x + elems[0]['attr']['a'] , y_1)
+
+        # t['attr']['y'] = min(elems[0]['attr']['y'], elems[1]['attr']['y'])
 
     if ( 'SUPERINDEX' in t.keys() ):
         elems = t.get('SUPERINDEX')
@@ -284,15 +296,15 @@ def recorrer3(t, out):
 
   if ( '()' in t.keys() ):
     elems = t.get('()')
-    out.append ( make_open_paren(str(elems[0]['attr']['x']), str(-elems[0]['attr']['y']), # ejes x, y
-                                 str(elems[0]['attr']['tam']),                            # font - size
-                                 str(-elems[0]['attr']['tam'] * 0.3 ),str(0),   # retocar para que quede "lindo", translate x, translate y
-                                 str(1),str(1)) )     # scale x    , scale y
+    out.append( make_open_paren(str(0),str(0),
+                                str(1),
+                                str(elems[0]['attr']['x'] - 0.45),str(- elems[0]['attr']['y'] + elems[0]['attr']['h1'] * 0.6),
+                                str(1),str(elems[0]['attr']['tam']*1) ) )
     recorrer3(elems[0], out)
-    out.append ( make_close_paren(str(elems[0]['attr']['x']), str(-elems[0]['attr']['y']),
-                                  str(elems[0]['attr']['tam']),
-                                  str(elems[0]['attr']['a'] ),str(0),       # retocar para que quede "lindo"
-                                  str(1),str(1)) )
+    out.append( make_close_paren(str(0),str(0),
+                                str(1),
+                                str(elems[0]['attr']['x'] + elems[0]['attr']['a'] - 0.15),str(- elems[0]['attr']['y'] + elems[0]['attr']['h1'] * 0.6),
+                                str(1),str(elems[0]['attr']['tam']*1) ) )
 
   if ( 'DIVIDE' in t.keys() ):
     elems = t.get('DIVIDE')
@@ -300,7 +312,7 @@ def recorrer3(t, out):
 
     out.append( make_line(str(t['attr']['x']), str(-t['attr']['y']),
                           str(t['attr']['x'] + t['attr']['a']), # recien aca balanceo el largo de la linea de div.
-                          str(-t['attr']['y']), str(0.03 * t['attr']['tam'])) )  # harcodeo el ancho de la linea de division
+                          str(-t['attr']['y']), str(0.05)) )  # harcodeo el ancho de la linea de division
 
     recorrer3(elems[1], out)
 
