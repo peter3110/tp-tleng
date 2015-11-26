@@ -128,7 +128,7 @@ Segundo Cuatrimestre de 2015
 Apellido y Nombre & LU & E-mail\\
 \hline
 Rodriguez Pedro & 197/12 & pedro3110.jim@gmail.om \\
-Matias Pizzagali & COMP/ETAR & COMPLETAR@COMPLETAR.com \\
+Matias Pizzagali & 257/12 & matipizza@gmail.com \\
 \hline
 \end{tabular}
 
@@ -145,6 +145,8 @@ Matias Pizzagali & COMP/ETAR & COMPLETAR@COMPLETAR.com \\
 El objetivo de este trabajo práctico es desarrollar un compositor de fórmulas matemáticas. El mismo tomará como entrada la descripción de una fórmula en una versión muy simplificada del lenguaje utilizado por LATEX y producirá como salida un archivo SVG (Scalable Vector Graphics).
 
 \section{Desarrollo}
+
+\subsection{Desambiguación de la gramática}
 Para poder realizar el TP, utilizamos la librería PLY para Python, la cual permite parsear las cadenas
 de entrada en función de una gramática que nosotros le proveemos.
 
@@ -165,9 +167,8 @@ E & $\rightarrow$ & E & E                 &   & & \\
 \end{tabular}
 \end{table}
 
-Para evitar tener que resolver los conflictos Shift/Reduce y Reduce/Reduce que produciría esta gramática, lo primero que hicimos fue desambiguarla, para obtener la siguiente gramática alternativa,
-que genera el mismo lenguaje que la propuesta por la cátedra. Para hacer esto,
-tuvimos en cuenta que la división es la de menor precedencia, seguida de la concatenación. También que ambas son asociativas a izquierda y que el super y sub índice no son asociativos. 
+Como esta gramátia es ambigua, genera conflictos Shift/Reduce y Reduce/Reduce. Es por esto que lo primero que hicimos fue desambiguarla, para obtener la siguiente gramática alternativa,
+que genera el mismo lenguaje.  
 
 \begin{table}[ht]
 \begin{tabular} {c c c c c c c}
@@ -189,20 +190,18 @@ B & $\rightarrow$ & C &                   &   & & \\
 \end{tabular}
 \end{table}
 
+Tuvimos en cuenta que la división es la operación de menor precedencia, seguida de la concatenación. También que ambas son asociativas a izquierda y que el super y sub índice no son asociativos.
 
-En el parsing, todos los atributos que definimos son sintetizados.
-Los atributos definidos son: x, y, tam, h1, h2 y a (ancho).
-Cuando hacemos el parsing, inicializamos cada atributo en Nil, y construimos un
-árbol sintáctico para la cadena de entrada.
-A continuación, recorremos el árbol 3 veces, rellenando los valores de los atributos.
-La primera recorrida es top-down, la segunda bottom-up y la última, top-down.
+\subsection{TDS y Atributos}
+Para cada uno de los nodos del árbol (CONCAT, DIVIDE, (), SUBINDEX, SUPERINDEX, SUBSUPERINDEX, SUPERSUBINDEX 
+y ID) definimos los siguientes atributos: $x$, $y$, $tam (alto)$, $h1$, $h2$ y $a (ancho)$. Estos atributos son todos sintetizados. \\
 
+Una vez que tenemos el árbol sintáctico, recorremos el mismo 3 veces, modificando los valores de los atributos.
+En el primer recorrido, definimos $tam = 1$ para el nodo raíz, y  hacemos que cada padre defina para cada uno de sus hijos el atributo $tam$. Por ejemplo, se verifica que el $tam$ de cada subíndice y superíndice es $0.7 * tam'$, donde $tam'$ es el atributo $tam$ de su padre. \\
+En el segundo recorrido, definimos el ancho $'a'$ que ocupa cada nodo en función del ancho total que es ocupado entre todos sus descendientes. \\
+Por último, hacemos otro recorrido top-down, en el cuál a partir de los atribtos $'tam'$ y $'a'$ definimos los atributos $'x'$ e $'y'$, que son los que van a determinar en qué posición se escribirá cada una de las subexpresiones de la cadena, y efectuamos la traducción a SVG.
 
-%\subsection{Decisiones tomadas}
-
-%\subsection{Problemas encontrados}
-
-%\subsection{Conclusiones}
+\section{Resultados}
 
 
 \end{document}
