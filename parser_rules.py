@@ -19,7 +19,7 @@ def p_expression_init(p):
     pp.pprint(res2)
 
     out = []
-    out.append ( '''<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"> <svg xmlns="http://www.w3.org/2000/svg" version="1.1"> <g transform="translate(0, 200) scale(50)" font-family= "Courier">''' )
+    out.append ( '''<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"> <svg xmlns="http://www.w3.org/2000/svg" version="1.1"> <g transform="translate(0, 200) scale(200)" font-family= "Courier">''' )
 
     # recorro el arbol y voy agregando lineas al output segun corresponda
 
@@ -109,7 +109,6 @@ def recorrer(t,tactual):    # primer recorrido top-down (rellenar tam) +++ recor
     nominador = recorrer(elems[0], tactual).copy()
     denominador = recorrer(elems[1], tactual).copy()
 
-    # TODO: Estamos pisando valores identicos, deberiamos sacar esto
     nominador['attr']['a'] = elems[0]['attr']['a']
     denominador['attr']['a'] = elems[1]['attr']['a']
 
@@ -196,8 +195,6 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
     if ( 'DIVIDE' in t.keys() ):
         elems = t.get('DIVIDE')
 
-        # t['attr']['y'] = y + 0.3
-
         num_x = x
         den_x = x
 
@@ -212,6 +209,7 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
 
         den_y = t['attr']['y'] - (elems[1]['attr']['tam'] - elems[1]['attr']['h1']) * 0.7
         den = recorrer2(elems[1],den_x,den_y).copy()
+
 
     if ( '()' in t.keys() ):
 
