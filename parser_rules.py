@@ -194,6 +194,8 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
     if ( 'DIVIDE' in t.keys() ):
         elems = t.get('DIVIDE')
 
+        t['attr']['y'] = y + 0.3
+
         num_x = x
         den_x = x
 
