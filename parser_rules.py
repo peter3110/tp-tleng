@@ -14,11 +14,12 @@ def p_expression_init(p):
     'S : E'
     res1 = recorrer(p[1],1)     # agrego todos los atributos menos x e y
     res2 = recorrer2(res1,0.5,-0.7)  # agrego x e y
+
     pp = pprint.PrettyPrinter(indent=1)
     pp.pprint(res2)
 
     out = []
-    out.append ( '''<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"> <svg xmlns="http://www.w3.org/2000/svg" version="1.1"> <g transform="translate(0, 200) scale(200)" font-family= "Courier">''' )
+    out.append ( '''<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"> <svg xmlns="http://www.w3.org/2000/svg" version="1.1"> <g transform="translate(0, 200) scale(50)" font-family= "Courier">''' )
 
     # recorro el arbol y voy agregando lineas al output segun corresponda
 
@@ -108,22 +109,24 @@ def recorrer(t,tactual):    # primer recorrido top-down (rellenar tam) +++ recor
     nominador = recorrer(elems[0], tactual).copy()
     denominador = recorrer(elems[1], tactual).copy()
 
+    # TODO: Estamos pisando valores identicos, deberiamos sacar esto
     nominador['attr']['a'] = elems[0]['attr']['a']
     denominador['attr']['a'] = elems[1]['attr']['a']
 
-    ancho_divide = max(nominador['attr']['a'], denominador['attr']['a']) * 1
-    t['attr']['a'] = ancho_divide # aca podria tener que agregar una *CTE. = 0.6 para emparejar con denominador / nominador-
-                                  # Ahora, esto lo estoy haciendo cuando paso a escribir en el output el ancho de la linea de div.
-    t['attr']['h1'] = tactual * 0.1
-    t['attr']['h2'] = - tactual * 0.1 - denominador['attr']['tam']
+    ancho_divide = max(nominador['attr']['a'], denominador['attr']['a'])
+    t['attr']['a'] = ancho_divide
+
+    t['attr']['h1'] = denominador['attr']['tam']
+    t['attr']['h2'] = nominador['attr']['tam']
 
   if ('()' in t.keys() ):
-    t['attr']['tam'] = tactual    # este valor se lo pongo en la primera recorrida. en la 2da, lo modifico ( ? )
+    # t['attr']['tam'] = tactual    # este valor se lo pongo en la primera recorrida. en la 2da, lo modifico ( ? )
     elems = t.get('()')
     recorrer(elems[0],tactual)
+    t['attr']['tam'] = elems[0]['attr']['tam']
     t['attr']['a'] = elems[0]['attr']['a'] * 1.05  # doy un margen a izq y derecha
-    t['attr']['h1'] = 0
-    t['attr']['h2'] = 0
+    t['attr']['h1'] = elems[0]['attr']['h1']
+    t['attr']['h2'] = elems[0]['attr']['h2']
 
   if ('CONCAT' in t.keys() ):
     t['attr']['tam'] = tactual
@@ -132,47 +135,52 @@ def recorrer(t,tactual):    # primer recorrido top-down (rellenar tam) +++ recor
         h = recorrer(elem, tactual).copy()
         ancho_concat += h['attr']['a']
         t['attr']['tam'] = max(t['attr']['tam'], h['attr']['tam'])  # ACTUALIZO EL TAMANNO DE LA CONCATENACION
+        t['attr']['h1'] = max(t['attr']['h1'], h['attr']['h1'])  # ACTUALIZO EL TAMANNO DE LA CONCATENACION
+        t['attr']['h2'] = max(t['attr']['h2'], h['attr']['h2'])  # ACTUALIZO EL TAMANNO DE LA CONCATENACION
     t['attr']['a'] = ancho_concat
-    t['attr']['h1'] = 0
-    t['attr']['h2'] = 0
 
   if ('SUPERINDEX' in t.keys() ):
     t['attr']['tam'] = 1.7 * tactual
     elems = t.get('SUPERINDEX')
     h1 = recorrer(elems[0], tactual).copy()
     h2 = recorrer(elems[1], tactual * 0.7).copy()
+    t['attr']['tam'] = h1['attr']['tam'] + h2['attr']['tam'] # Actualizo el valor de tam por si alguno crecio.
     t['attr']['a'] = h1['attr']['a'] + h2['attr']['a']
-    t['attr']['h1'] = 0
-    t['attr']['h2'] = 0
+    t['attr']['h1'] = h2['attr']['h1']
+    t['attr']['h2'] = 0.6 * h1['attr']['tam'] + h2['attr']['h2']
 
   if ('SUBINDEX' in t.keys() ):
     t['attr']['tam'] = 1.7 * tactual
     elems = t.get('SUBINDEX')
     h1 = recorrer(elems[0], tactual).copy()
     h2 = recorrer(elems[1], tactual * 0.7).copy()
+    t['attr']['tam'] = h1['attr']['tam'] + h2['attr']['tam'] # Actualizo el valor de tam por si alguno crecio.
     t['attr']['a'] = h1['attr']['a'] + h2['attr']['a']
-    t['attr']['h1'] = 0
-    t['attr']['h2'] = 0.2 * t['attr']['tam']
+    t['attr']['h1'] = 0.5 * h1['attr']['tam'] + h2['attr']['h1']
+    t['attr']['h2'] = h2['attr']['h2']
 
   if ('SUPERSUBINDEX' in t.keys() ):
-    t['attr']['tam'] = 1.7 * tactual
+    t['attr']['tam'] = tactual + 0.7 * tactual + 0.7 * tactual
     elems = t.get('SUPERSUBINDEX')
     h1 = recorrer(elems[0], tactual).copy()
     h2 = recorrer(elems[1], tactual * 0.7).copy()
     h3 = recorrer(elems[2], tactual * 0.7).copy()
+    t['attr']['tam'] = h1['attr']['tam'] + h2['attr']['tam']+ h3['attr']['tam'] # Actualizo el valor de tam por si alguno crecio.
     t['attr']['a'] = h1['attr']['a'] + max(h2['attr']['a'], h3['attr']['a'])
-    t['attr']['h1'] = 0
-    t['attr']['h2'] = 0.2 * t['attr']['tam']
+    t['attr']['h1'] = 0.5 * h1['attr']['tam'] + h3['attr']['h1']
+    t['attr']['h2'] = 0.6 * h1['attr']['tam'] + h2['attr']['h2']
+
 
   if ('SUBSUPERINDEX' in t.keys() ):
-    t['attr']['tam'] = 1.7 * tactual
+    t['attr']['tam'] = tactual + 0.7 * tactual + 0.7 * tactual
     elems = t.get('SUBSUPERINDEX')
     h1 = recorrer(elems[0], tactual).copy()
     h2 = recorrer(elems[1], tactual * 0.7).copy()
     h3 = recorrer(elems[2], tactual * 0.7).copy()
+    t['attr']['tam'] = h1['attr']['tam'] + h2['attr']['tam']+ h3['attr']['tam'] # Actualizo el valor de tam por si alguno crecio.
     t['attr']['a'] = h1['attr']['a'] + max(h2['attr']['a'], h3['attr']['a'])
-    t['attr']['h1'] = 0
-    t['attr']['h2'] = 0.2 * t['attr']['tam']
+    t['attr']['h1'] = 0.5 * h1['attr']['tam'] + h2['attr']['h1']
+    t['attr']['h2'] = 0.6 * h1['attr']['tam'] + h3['attr']['h2']
 
   return t
 
@@ -183,21 +191,23 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
     t['attr']['x'] = x
     t['attr']['y'] = y
 
-    #if ( 'ID' in t.keys() ):
-
     if ( 'DIVIDE' in t.keys() ):
         elems = t.get('DIVIDE')
 
+        num_x = x
+        den_x = x
+
         if (elems[0]['attr']['a'] < elems[1]['attr']['a']):
-          h1 = recorrer2(elems[0], x + elems[1]['attr']['a'] * (0.3), t['attr']['y'] + t['attr']['h1'] + elems[0]['attr']['h2']).copy()   # desplazo segun h1, h2
+            num_x = t['attr']['x'] + 0.5 * (elems[1]['attr']['a'] - elems[0]['attr']['a'])
         else:
-          h1 = recorrer2(elems[0], x, t['attr']['y'] + t['attr']['h1'] + elems[0]['attr']['h2']).copy()
+            den_x = t['attr']['x'] + 0.5 * (elems[0]['attr']['a'] - elems[1]['attr']['a'])
 
-        if (elems[0]['attr']['a'] > elems[1]['attr']['a']):
-          h2 = recorrer2(elems[1], x + elems[0]['attr']['a'] * (0.3), t['attr']['y'] - t['attr']['tam'] * 0.4).copy()  # tengo en cuenta el escalamiento para el denom
-        else:
-          h2 = recorrer2(elems[1], x, t['attr']['y'] - t['attr']['tam'] * 0.4).copy()
+        num_y = t['attr']['y'] + elems[0]['attr']['h1'] + 0.05
 
+        num = recorrer2(elems[0],num_x,num_y).copy()
+
+        den_y = t['attr']['y'] - (elems[1]['attr']['tam'] - elems[1]['attr']['h1']) * 0.7
+        den = recorrer2(elems[1],den_x,den_y).copy()
 
     if ( '()' in t.keys() ):
 
@@ -209,32 +219,43 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
 
     if ( 'CONCAT' in t.keys() ):
         elems = t.get('CONCAT')
-        recorrer2(elems[0], x, y)
-        recorrer2(elems[1], x + elems[0]['attr']['a'] , y)      # AGREGO CTE = 0.6 PARA DESPLAZAR A DERECHA  - OK
+
+        tam_0 = elems[0]['attr']['tam']
+        tam_1 = elems[1]['attr']['tam']
+
+        dif = tam_1 - tam_0
+        if (dif > 0):
+            y_0 = y
+            y_1 = y
+        else:
+            y_0 = y
+            y_1 = y
+
+        recorrer2(elems[0], x, y_0)
+        recorrer2(elems[1], x + elems[0]['attr']['a'] , y_1)
 
     if ( 'SUPERINDEX' in t.keys() ):
         elems = t.get('SUPERINDEX')
         h1 = recorrer2(elems[0], x, y).copy()
-        recorrer2(elems[1], x + elems[0]['attr']['a'], y + 0.3 * h1['attr']['tam'])
+        recorrer2(elems[1], x + elems[0]['attr']['a'], y + t['attr']['h2'] - elems[1]['attr']['h2'])
 
 
     if ( 'SUBINDEX' in t.keys() ):
         elems = t.get('SUBINDEX')
         h1 = recorrer2(elems[0], x, y).copy()
-        recorrer2(elems[1], x + elems[0]['attr']['a'], y - 0.3 * h1['attr']['tam'])   # ESTE 0.3 ES SUPER ARBITRARIO
-
+        recorrer2(elems[1], x + elems[0]['attr']['a'], y - t['attr']['h1'] + elems[1]['attr']['h1'])
 
     if ( 'SUPERSUBINDEX' in t.keys() ):
         elems = t.get('SUPERSUBINDEX')
         h1 = recorrer2(elems[0], x, y).copy()
-        recorrer2(elems[1], x + elems[0]['attr']['a'], y + 0.3 * h1['attr']['tam'])
-        recorrer2(elems[2], x + elems[0]['attr']['a'], y - 0.3 * h1['attr']['tam'])
+        recorrer2(elems[1], x + elems[0]['attr']['a'], y + t['attr']['h2'] - elems[1]['attr']['h2'])
+        recorrer2(elems[2], x + elems[0]['attr']['a'], y - t['attr']['h1'] + elems[2]['attr']['h1'])
 
     if ( 'SUBSUPERINDEX' in t.keys() ):
         elems = t.get('SUBSUPERINDEX')
         h1 = recorrer2(elems[0], x, y).copy()
-        recorrer2(elems[1], x + elems[0]['attr']['a'], y - 0.3 * h1['attr']['tam'])
-        recorrer2(elems[2], x + elems[0]['attr']['a'], y + 0.3 * h1['attr']['tam'])
+        recorrer2(elems[1], x + elems[0]['attr']['a'], y - t['attr']['h1'] + elems[1]['attr']['h1'])
+        recorrer2(elems[2], x + elems[0]['attr']['a'], y + t['attr']['h2'] - elems[2]['attr']['h2'])
 
 
     return t
