@@ -19,7 +19,7 @@ def p_expression_init(p):
     pp.pprint(res2)
 
     out = []
-    out.append ( '''<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"> <svg xmlns="http://www.w3.org/2000/svg" version="1.1"> <g transform="translate(0, 200) scale(200)" font-family= "Courier">''' )
+    out.append ( '''<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"> <svg xmlns="http://www.w3.org/2000/svg" version="1.1"> <g transform="translate(0, 50) scale(50)" font-family= "Courier">''' )
 
     # recorro el arbol y voy agregando lineas al output segun corresponda
 
