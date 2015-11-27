@@ -9,6 +9,8 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amsthm}
+\usepackage{svg}
+\usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{enumitem} % Provee macro \setlist
@@ -17,7 +19,7 @@
 \usepackage{hyperref}
 \usepackage{multicol}
 \usepackage{verbatim}
-\usepackage{listings}
+\usepackage[procnames]{listings}
 \usepackage[toc, page]{appendix}
 \usepackage{color}
 \usepackage{syntax}
@@ -27,7 +29,7 @@
 \pagestyle{fancy}
 \thispagestyle{fancy}
 \lhead{Trabajo Práctico · Teoria de Lenguajes}
-\rhead{Rodriguez · COMPLETAR}
+\rhead{Rodriguez · Pizzagalli}
 \renewcommand{\footrulewidth}{0.4pt}
 \cfoot{\thepage /\pageref{LastPage}}
 
@@ -95,9 +97,9 @@
 
 \begin{center}
 
-\includegraphics[height=2cm]{DC.png} 
+\includegraphics[height=2cm]{DC.png}
 \hfill
-\includegraphics[height=2cm]{UBA.jpg} 
+\includegraphics[height=2cm]{UBA.jpg}
 
 \vspace{2cm}
 
@@ -168,7 +170,7 @@ E & $\rightarrow$ & E & E                 &   & & \\
 \end{table}
 
 Como esta gramátia es ambigua, genera conflictos Shift/Reduce y Reduce/Reduce. Es por esto que lo primero que hicimos fue desambiguarla, para obtener la siguiente gramática alternativa,
-que genera el mismo lenguaje.  
+que genera el mismo lenguaje.
 
 \begin{table}[ht]
 \begin{tabular} {c c c c c c c}
@@ -186,14 +188,14 @@ B & $\rightarrow$ & C &                   &   & & \\
   & $|$           & \detokenize{(}        & C & \detokenize{)} & & \\
   & $|$           & \{                    & C & \} & & \\
   & $|$           & $ID$                  & & & & \\
- 
+
 \end{tabular}
 \end{table}
 
 Tuvimos en cuenta que la división es la operación de menor precedencia, seguida de la concatenación. También que ambas son asociativas a izquierda y que el super y sub índice no son asociativos.
 
 \subsection{TDS y Atributos}
-Para cada uno de los nodos del árbol (CONCAT, DIVIDE, (), SUBINDEX, SUPERINDEX, SUBSUPERINDEX, SUPERSUBINDEX 
+Para cada uno de los nodos del árbol (CONCAT, DIVIDE, (), SUBINDEX, SUPERINDEX, SUBSUPERINDEX, SUPERSUBINDEX
 y ID) definimos los siguientes atributos: $x$, $y$, $tam (alto)$, $h1$, $h2$ y $a (ancho)$. Estos atributos son todos sintetizados. \\
 
 Una vez que tenemos el árbol sintáctico, recorremos el mismo 3 veces, modificando los valores de los atributos.
@@ -202,6 +204,32 @@ En el segundo recorrido, definimos el ancho $'a'$ que ocupa cada nodo en funció
 Por último, hacemos otro recorrido top-down, en el cuál a partir de los atribtos $'tam'$ y $'a'$ definimos los atributos $'x'$ e $'y'$, que son los que van a determinar en qué posición se escribirá cada una de las subexpresiones de la cadena, y efectuamos la traducción a SVG.
 
 \section{Resultados}
+
+
+\section{Codigo}
+\definecolor{keywords}{RGB}{255,0,90}
+\definecolor{comments}{RGB}{0,0,113}
+\definecolor{red}{RGB}{160,0,0}
+\definecolor{green}{RGB}{0,150,0}
+
+\lstset{language=Python,
+        breaklines=true,
+        basicstyle=\ttfamily\small,
+        keywordstyle=\color{keywords},
+        commentstyle=\color{comments},
+        stringstyle=\color{red},
+        showstringspaces=false,
+        identifierstyle=\color{green},
+        procnamekeys={def,class}}
+
+\subsection{tp.py}
+\lstinputlisting{../tp.py}
+
+\subsection{lexer_rules.py}
+\lstinputlisting{../lexerrules.py}
+
+\subsection{parser_rules.py}
+\lstinputlisting{../parserrules.py}
 
 
 \end{document}

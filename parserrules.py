@@ -228,8 +228,23 @@ def recorrer2(t, x, y): # segundo recorrido top-down, ahora para definir valores
         y_0 = y
         y_1 = y
 
+        # FALTA NIVELAR EL Y CUANDO TENEMOS DIVISIONES
+        # if( ('DIVIDE' in elems[0].keys()) and ('DIVIDE' not in elems[1].keys())  ):
+        #     y_1 = y - 0.3
+        #     recorrer2(elems[0], x, y)
+        #     recorrer2(elems[1], x + elems[0]['attr']['a'] , y_1)
+        # elif( ('DIVIDE' in elems[1].keys()) and ('DIVIDE' not in elems[0].keys())  ):
+        #     y_0 = y - 0.3
+        #     recorrer2(elems[0], x, y_0)
+        #     recorrer2(elems[1], x + elems[0]['attr']['a'] , y)
+        # else:
+        #     recorrer2(elems[0], x, y_0)
+        #     recorrer2(elems[1], x + elems[0]['attr']['a'] , elems[0]['attr']['y'])
+
         recorrer2(elems[0], x, y_0)
         recorrer2(elems[1], x + elems[0]['attr']['a'] , y_1)
+
+        # t['attr']['y'] = min(elems[0]['attr']['y'], elems[1]['attr']['y'])
 
     if ( 'SUPERINDEX' in t.keys() ):
         elems = t.get('SUPERINDEX')
