@@ -39,7 +39,8 @@ lexer = lex.lex(module=lexer_rules)
 # Build the parser
 parser = yacc.yacc(module=parser_rules)
 
-while True:
+s = "init"
+while s != "exit()" :     # finalizo si en la entrada escriben exit() - asumimos que es una cadena no valida (?)
    try:
        s = raw_input('cadena > ')
    except EOFError:

@@ -28,7 +28,7 @@ def p_expression_init(p):
     # fin
     out.append ( '''</g>
                     </svg> ''' )
-    open('test.svg','w').write(''.join(out))
+    open('figura.svg','w').write(''.join(out))
     print out
 
 # E -> E / A | A

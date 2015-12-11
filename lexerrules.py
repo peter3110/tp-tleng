@@ -20,7 +20,7 @@ t_RBRACKET = r'\}'
 t_SUPERINDEX = r'\^'
 t_SUBINDEX = r'_'
 def t_ID(t):
-    r'[a-zA-Z+-]'
+    r'[0-9]'
     t.value = t.value
     return t
 
