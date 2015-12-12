@@ -197,21 +197,92 @@ B & $\rightarrow$ & C &                   &   & & \\
 Tuvimos en cuenta que la división es la operación de menor precedencia, seguida de la concatenación. También que ambas son asociativas a izquierda y que el super y sub índice no son asociativos.
 
 \subsection{TDS y Atributos}
-Para cada uno de los nodos del árbol (CONCAT, DIVIDE, (), SUBINDEX, SUPERINDEX, SUBSUPERINDEX, SUPERSUBINDEX
-y ID) definimos los siguientes atributos: $x$, $y$, $tam (alto)$, $h1$, $h2$ y $a (ancho)$. Estos atributos son todos sintetizados. \\
+Para cada uno de los símbolos A,B,C,E, definimos los siguientes atributos de tipo enteros: $x$, $y$, $tam (alto)$ (heredados) y $h_up$, $h_down$, $ancho$ (sintetizados). \\
 
-Una vez que tenemos el árbol sintáctico, recorremos el mismo 3 veces, modificando los valores de los atributos.
-En el primer recorrido, definimos $tam = 1$ para el nodo raíz, y  hacemos que cada padre defina para cada uno de sus hijos el atributo $tam$. Por ejemplo, se verifica que el $tam$ de cada subíndice y superíndice es $0.7 * tam'$, donde $tam'$ es el atributo $tam$ de su padre. \\
-En el segundo recorrido, definimos el ancho $'a'$ que ocupa cada nodo en función del ancho total que es ocupado entre todos sus descendientes. \\
-Por último, hacemos otro recorrido top-down, en el cuál a partir de los atribtos $'tam'$ y $'a'$ definimos los atributos $'x'$ e $'y'$, que son los que van a determinar en qué posición se escribirá cada una de las subexpresiones de la cadena, y efectuamos la traducción a SVG.
+
+La TDS queda de la siguiente manera:
+
+\begin{itemize}
+
+  \item $ S   \rightarrow \{ E.size = 1, E.x = 0, E.y = 0 \} E \\ $
+
+  \item $ E   \rightarrow \{ A.size = E.size, A.x = E.x, A.y = E.y \} A \\ $
+
+  \item DIVIDE \\ $ E_1 \rightarrow \{ E_{2}.tam = E_{1}.tam, 
+                             E_{2}.x = E_{1}.x + ALGO, 
+                             E_{2}.y = E_{1}.y + ALGO \} E_2 / \\
+                          \{ A.tam = E_{1}.tam, 
+                             A.x = E_{1}.x + ALGO, 
+                             A.y = E_{1}.y + ALGO \} A \\
+                          \{ E_{1}.h\_up = E_{2}.h\_down + E_{2}.h\_up, 
+                             E_{1}.h\_down = A.h\_down + A.h\_up, 
+                             E_{1}.ancho = max(E_{2}.ancho, A.ancho) \} \\ $
+
+  \item $ A   \rightarrow \{ B.tam = 1, B.x = A.x, B.y = A.y \} B \\
+                          \{ A.h\_up = B.h\_up, 
+                             A.h\_down = B.h\_down, 
+                             A.ancho = B.ancho \} \\ $
+
+  \item CONCAT \\ $ A_1 \rightarrow \{ A_{2}.tam = A_{1}.tam, A_{2}.x = A_{1}.x, A_{2}.y = A_{1}.y \} A_2 \\
+                          \{ B.tam = 1, B.x = A_{1}.x + A_{1}.ancho + A_{2}.ancho, B.y = A_{1}.y \} B \\
+                          \{ A_{1}.h\_up = max(C_{1}.h\_up, C_{1}.h\_down), 
+                             A_{1}.h\_down = max(C_{1}.h\_up, C_{1}.h\_down), 
+                             A_{1}.ancho = A_{2}.ancho + B.ancho \} \\ $
+
+  \item $ B \rightarrow \{ C.tam = B.tam, C.x = B.x, C.y = B.y \} C \\
+                        \{ B.ancho = C.ancho, B.h\_up = C.h\_up, B.h\_down = C.h\_down \} \\ $
+
+  \item SUPERINDEX \\
+        $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
+                        C_1 \detokenize{^} \\
+                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \} 
+                        C_2 \\
+                        \{ B.ancho = C_{1}.ancho + C_{2}.ancho, B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
+                           B.h\_down = 0 \} \\ $
+
+  \item SUBINDEX \\ 
+        $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
+                        C_1 \_ \\
+                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \} 
+                        C_2 \\
+                        \{ B.ancho = C_{1}.ancho + C_{2}.ancho, B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
+                           B.h\_down = 0 \} \\ $
+
+  \item SUPERSUBINDEX \\
+        $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
+                        C_1 \detokenize{^} \\
+                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \}
+                        C_2 \_ \\
+                        \{ C_{3}.tam = C_{1}.tam * 0.7, C_{3}.x = C_{1}.x + C_{1}.ancho, C_{3}.y = C_{1}.y \}
+                        C_3 \\
+                        \{ B.ancho = C_{1}.ancho + C_{2}.ancho + C_{2}.ancho, 
+                           B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
+                           B.h\_down = ? \} \\ $
+
+  \item SUBSUPERINDEX \\
+        $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \} 
+                        C_1 \_ \\
+                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \} 
+                        C_2 \detokenize{^} \\
+                        \{ C_{3}.tam = C_{1}.tam * 0.7, C_{3}.x = C_{1}.x + C_{1}.ancho, C_{3}.y = C_{1}.y \} 
+                        C_3 \\
+                        \{ B.ancho = C_{1}.ancho + C_{2}.ancho + C_{2}.ancho, 
+                           B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
+                           B.h\_down = ? \} $
+
+  \item $ B \rightarrow ( \{ E.x = B.x, E.y = B.y, E.tam = B.tam \} E \\
+                          \{ B.h\_up = E.h\_up, B.h\_down = E.h\_down, B.ancho = E.ancho \} ) \\ $
+
+  \item $ B \rightarrow \{ \{ E.x = B.x, E.y = B.y, E.tam = B.tam \} E \\
+                          \{ B.h\_up = E.h\_up, B.h\_down = E.h\_down, B.ancho = E.ancho \} \} \\ $
+
+  \item $ B \rightarrow ID \{ B.h\_up = 0.6 * B.tam, B.h\_down = 0, B.ancho = 0.6 * B.tam \} \\ $  
+
+\end{itemize}
 
 \section{Resultados}
 \begin{figure}[h]
-  \includegraphics[scale=0.2]{img/ejemplo1.png}
-  \includegraphics[scale=0.2]{img/ejemplo2.png}
-  \includegraphics[scale=0.2]{img/ejemplo3.png}
-  \includegraphics[scale=0.2]{img/ejemplo4.png}
-  \includegraphics[scale=0.2]{img/ejemplo6.png}
+
 \end{figure}
 
 \section{Codigo}
