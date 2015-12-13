@@ -7,7 +7,7 @@ tokens = [
     'LBRACKET',    # para separar expresiones sin agregar ningun simbolo
     'RBRACKET',    # para separar expresiones sin agregar ningun simbolo
     'SUPERINDEX',  # es nodo: ^
-    'SUBINDEX',    # es nodo: _
+    'SUBINDEX'    # es nodo: _
 ]
 
 # Expresiones regulares para cada token

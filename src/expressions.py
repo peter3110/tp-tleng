@@ -1,5 +1,4 @@
 class Divide(object):
-
   def __init__(self, left, right):
     self.left = left
     self.right = right
@@ -10,9 +9,16 @@ class Divide(object):
   def children(self):
     return [self.left, self.right]
 
+  def recorrer(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
+  def recorrer2(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
 
 class Concat(object):
-
   def __init__(self, left, right):
     self.left = left
     self.right = right
@@ -23,8 +29,15 @@ class Concat(object):
   def children(self):
     return [self.left, self.right]
 
-class SuperIndex(object):
+  def recorrer(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
 
+  def recorrer2(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
+class SuperIndex(object):
   def __init__(self, base, index):
     self.base = base
     self.index = index
@@ -35,9 +48,16 @@ class SuperIndex(object):
   def children(self):
     return [self.base, self.index]
 
+  def recorrer(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
+  def recorrer2(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
 
 class SubIndex(object):
-
   def __init__(self, base, index):
     self.base = base
     self.index = index
@@ -48,8 +68,15 @@ class SubIndex(object):
   def children(self):
     return [self.base, self.index]
 
-class SuperSubIndex(object):
+  def recorrer(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
 
+  def recorrer2(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
+class SuperSubIndex(object):
   def __init__(self, base, super_index, sub_index):
     self.base = base
     self.super_index = super_index
@@ -61,9 +88,16 @@ class SuperSubIndex(object):
   def children(self):
     return [self.base, self.super_index, self.sub_index]
 
+  def recorrer(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
+  def recorrer2(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
 
 class SubSuperIndex(object):
-
   def __init__(self, base, sub_index, super_index):
     self.base = base
     self.sub_index = sub_index
@@ -75,8 +109,15 @@ class SubSuperIndex(object):
   def children(self):
     return [self.base, self.sub_index, self.super_index]
 
-class Parenthesis(object):
+  def recorrer(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
 
+  def recorrer2(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
+class Parenthesis(object):
   def __init__(self, content):
     self.content = content
 
@@ -86,9 +127,16 @@ class Parenthesis(object):
   def children(self):
     return [self.content]
 
+  def recorrer(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
+  def recorrer2(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
 
 class Id(object):
-
   def __init__(self, value):
     self.value = value
 
@@ -97,3 +145,11 @@ class Id(object):
 
   def children(self):
     return []
+
+  def recorrer(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError
+
+  def recorrer2(self):
+    # Aca se implementa cada tipo de expresion.
+    raise NotImplementedError

@@ -2,4 +2,5 @@
 informe.toc
 informe.log
 informe.aux
-informe.out
+*.out
+parsetab.py

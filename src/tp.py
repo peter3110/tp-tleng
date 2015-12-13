@@ -10,7 +10,12 @@ from sys import argv, exit
 import ply.lex as lex
 import ply.yacc as yacc
 
-if __name__ == "__main__"
+def dump_ast(ast):
+  res = ""
+  return res
+
+
+if __name__ == "__main__":
   # Build the lexer
   lexer = lex.lex(module=lexer_rules)
   # Build the parser
@@ -23,10 +28,14 @@ if __name__ == "__main__"
     except EOFError:
       break
     if not s: continue
-    result = parser.parse(s)
-    print(result)
+    ast = parser.parse(s, lexer)
+    # TODO: implementar los recorrer y el dump, q van a hacer los distintos recorridos para implementar
+    # el comportamiento de la TDS, la implementacion de los recorrer deberia vivir en la definicion de las clases
+    # recorrer(ast)
+    # recorrer2(ast)
 
-
+    result = dump_ast(ast)
+    print result
 
 
 # # ejemplo del tp: (A^BC^D/E^F_G+H)-I
