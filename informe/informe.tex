@@ -149,12 +149,11 @@ Matias Pizzagali & 257/12 & matipizza@gmail.com \\
 El objetivo de este trabajo práctico es desarrollar un compositor de fórmulas matemáticas. El mismo tomará como entrada la descripción de una fórmula en una versión muy simplificada del lenguaje utilizado por LATEX y producirá como salida un archivo SVG (Scalable Vector Graphics).
 
 \section{Desarrollo}
+Para poder realizar el TP, utilizamos la librería PLY para Python, la cual implementa Lex y Yacc enteramente en Python. Usa parsing LALR(1), y nos permitirá parsear las cadenas de entrada para nuestra gramática, descripta más adelante.
 
 \subsection{Desambiguación de la gramática}
-Para poder realizar el TP, utilizamos la librería PLY para Python, la cual permite parsear las cadenas
-de entrada en función de una gramática que nosotros le proveemos.
 
-La siguiente gramática ambigua fue la propuesta por la cátedra:
+La gramática propuesta inicialmente fue la siguiente:
 
 \begin{table}[ht]
 \begin{tabular} {c c c c c c c}
@@ -166,13 +165,12 @@ E & $\rightarrow$ & E & E                 &   & & \\
   & $|$           & E & \detokenize{^}    & E & \_  & E \\
   & $|$           & E & \_                & E & \detokenize{^} & E \\
   & $|$           & \detokenize{(}        & E & \detokenize{)} & & \\
-  & $|$           & \{        & E & \} & & \\
+  & $|$           & \{                    & E & \} & & \\
   & $|$           & $l$ & & & & \\
 \end{tabular}
 \end{table}
 
-Como esta gramátia es ambigua, genera conflictos Shift/Reduce y Reduce/Reduce. Es por esto que lo primero que hicimos fue desambiguarla, para obtener la siguiente gramática alternativa,
-que genera el mismo lenguaje.
+Sin embargo, al utilizar esta gramática para hacer el parsing, se generan conflictos Shift/Reduce. Esto es debido a que la gramática es ambigua (para una misma cadena pueden haber más de un árbol de derivación posibles).Luego, para evitar conflictos Shift/Reduce, generamos la siguiente gramática, equivalente a la anterior pero no ambigua.
 
 \begin{table}[ht]
 \begin{tabular} {c c c c c c c}
@@ -194,21 +192,20 @@ B & $\rightarrow$ & C &                   &   & & \\
 \end{tabular}
 \end{table}
 
-Tuvimos en cuenta que la división es la operación de menor precedencia, seguida de la concatenación. También que ambas son asociativas a izquierda y que el super y sub índice no son asociativos.
+Tuvimos en cuenta que la división es la operación de menor precedencia, seguida de la concatenación, luego de los subíndice y superíndice y luego por lo paréntesis y corchetes. También que división y concatenación son asociativas a izquierda y que subíndice y superíndice no son asociativos.
 
 \subsection{TDS y Atributos}
-Para cada uno de los símbolos A,B,C,E, definimos los siguientes atributos de tipo enteros: $x$, $y$, $tam (alto)$ (heredados) y $h_up$, $h_down$, $ancho$ (sintetizados). \\
+Para cada uno de los símbolos A,B,C,E, definimos los siguientes atributos de tipo enteros: $x$, $y$, $tam$ (heredados) y $h\_up$, $h\_down$, $ancho$ (sintetizados). \\
 
-
-La TDS queda de la siguiente manera:
+A partir de estos atributos, generamos la siguiente TDS:
 
 \begin{itemize}
 
-  \item $ S   \rightarrow \{ E.size = 1, E.x = 0, E.y = 0 \} E \\ $
+  \item $ S   \rightarrow \{ E.tam = 1, E.x = 0, E.y = 0 \} E \\ $
 
-  \item $ E   \rightarrow \{ A.size = E.size, A.x = E.x, A.y = E.y \} A \\ $
+  \item $ E   \rightarrow \{ A.tam = E.tam, A.x = E.x, A.y = E.y \} A \\ $
 
-  \item DIVIDE \\ $ E_1 \rightarrow \{ E_{2}.tam = E_{1}.tam, 
+  \item $ E_1 \rightarrow \{ E_{2}.tam = E_{1}.tam, 
                              E_{2}.x = E_{1}.x + ALGO, 
                              E_{2}.y = E_{1}.y + ALGO \} E_2 / \\
                           \{ A.tam = E_{1}.tam, 
@@ -223,7 +220,7 @@ La TDS queda de la siguiente manera:
                              A.h\_down = B.h\_down, 
                              A.ancho = B.ancho \} \\ $
 
-  \item CONCAT \\ $ A_1 \rightarrow \{ A_{2}.tam = A_{1}.tam, A_{2}.x = A_{1}.x, A_{2}.y = A_{1}.y \} A_2 \\
+  \item $ A_1 \rightarrow \{ A_{2}.tam = A_{1}.tam, A_{2}.x = A_{1}.x, A_{2}.y = A_{1}.y \} A_2 \\
                           \{ B.tam = 1, B.x = A_{1}.x + A_{1}.ancho + A_{2}.ancho, B.y = A_{1}.y \} B \\
                           \{ A_{1}.h\_up = max(C_{1}.h\_up, C_{1}.h\_down), 
                              A_{1}.h\_down = max(C_{1}.h\_up, C_{1}.h\_down), 
@@ -232,24 +229,21 @@ La TDS queda de la siguiente manera:
   \item $ B \rightarrow \{ C.tam = B.tam, C.x = B.x, C.y = B.y \} C \\
                         \{ B.ancho = C.ancho, B.h\_up = C.h\_up, B.h\_down = C.h\_down \} \\ $
 
-  \item SUPERINDEX \\
-        $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
+  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
                         C_1 \detokenize{^} \\
                         \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \} 
                         C_2 \\
                         \{ B.ancho = C_{1}.ancho + C_{2}.ancho, B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
                            B.h\_down = 0 \} \\ $
 
-  \item SUBINDEX \\ 
-        $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
+  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
                         C_1 \_ \\
                         \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \} 
                         C_2 \\
                         \{ B.ancho = C_{1}.ancho + C_{2}.ancho, B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
                            B.h\_down = 0 \} \\ $
 
-  \item SUPERSUBINDEX \\
-        $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
+  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
                         C_1 \detokenize{^} \\
                         \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \}
                         C_2 \_ \\
@@ -259,8 +253,7 @@ La TDS queda de la siguiente manera:
                            B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
                            B.h\_down = ? \} \\ $
 
-  \item SUBSUPERINDEX \\
-        $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \} 
+  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \} 
                         C_1 \_ \\
                         \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \} 
                         C_2 \detokenize{^} \\
@@ -280,10 +273,30 @@ La TDS queda de la siguiente manera:
 
 \end{itemize}
 
-\section{Resultados}
-\begin{figure}[h]
+Para implementar esta TDS, generamos para cada cadena de entrada un árbol sintáctico en el cual el único token que representa una hoja es ID. También definimos `` () '' y `` CONCAT '' como nodos, así como los siguientes tokens:
+\begin{itemize} 
+  \item SUPERINDEX
+  \item SUBINDEX
+  \item SUBSUPERINDEX
+  \item SUPERSUBINDEX
+  \item DIVISION
+\end{itemize}
 
-\end{figure}
+Cada nodo y cada hoja tiene los 6 atributos ya descriptos, y para heredar y sintetizar de forma correcta dichos atributos según la TDS ya descripta, recorremos este árbol 3 veces, de forma top-down y bottom-up. Para hacer esto, utilizamos las siguientes funciones:
+\begin{itemize}
+  \item recorrer1: heredamos desde la raíz hasta las hojas el atributo \emph{tam} 
+  \item recorrer2: sintetizamos desde las hojas hasta la raíz los atributos \emph{ancho}, \emph{h\_up} y \emph{h\_down}, utilizando el atributo tam, ya calculado.
+  \item recorrer3: heredamos desde la raíz hasta las hojas los atributos \emph{x} e \emph{y}, utilizando los atributos ya calculados en los dos recorridos anteriores.
+\end{itemize}
+
+Una vez que tenemos el árbol decorado correctamente con todos los atributos, pasamos a generar el archivo SVG, a partir de un nuevo recorrido top-down del árbol sintáctico.
+
+\section{Resultados y casos de prueba}
+
+
+\section{Manual de usuario}
+Para correr el TP, es necesario tener instalado Python 2.7 o posterior y la librería PLY, que puede obtenerse en https://pypi.python.org/pypi/ply. Para correr el tp, abrir una terminal en la carpeta src, y ejecutar el comando `` python tp.py ''. A continuación, introducir la cadena que se desea generar y hacer enter. Se genera la figura deseada en el archivo `` imagen.svg ''.
+
 
 \section{Codigo}
 \definecolor{keywords}{RGB}{255,0,90}
