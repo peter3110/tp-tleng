@@ -4,6 +4,7 @@
 # -----------------------------------------------------------------------------
 import lexer_rules
 import parser_rules
+import pdb
 
 from sys import argv, exit
 
@@ -11,6 +12,7 @@ import ply.lex as lex
 import ply.yacc as yacc
 
 def dump_ast(ast):
+  pdb.set_trace()
   res = ""
   return res
 
@@ -31,8 +33,8 @@ if __name__ == "__main__":
     ast = parser.parse(s, lexer)
     # TODO: implementar los recorrer y el dump, q van a hacer los distintos recorridos para implementar
     # el comportamiento de la TDS, la implementacion de los recorrer deberia vivir en la definicion de las clases
-    # recorrer(ast)
-    # recorrer2(ast)
+    ast.recorrer()
+    ast.recorrer2()
 
     result = dump_ast(ast)
     print result
