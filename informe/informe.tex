@@ -191,9 +191,9 @@ B & $\rightarrow$ & C &                   &   & & \\
   & $|$           & C & \_                & C & & \\
   & $|$           & C & \detokenize{^}    & C & \_  & C \\
   & $|$           & C & \_                & C & \detokenize{^} & C \\
-  & $|$           & \detokenize{(}        & C & \detokenize{)} & & \\
-  & $|$           & \{                    & C & \} & & \\
-  & $|$           & $ID$                  & & & & \\
+C & $\rightarrow$ & \detokenize{(}        & E & \detokenize{)} & & \\
+  & $|$           & \{                    & E & \} & & \\
+  & $|$           & $l$                  & & & & \\
 
 \end{tabular}
 \end{table}
@@ -237,9 +237,9 @@ A partir de estos atributos, generamos la siguiente TDS:
                              A.ancho = B.ancho \} \\ $
 
   \item $ A_1 \rightarrow \{ A_{2}.tam = A_{1}.tam, A_{2}.x = A_{1}.x, A_{2}.y = A_{1}.y \} A_2 \\
-                          \{ B.tam = 1, B.x = A_{1}.x + A_{1}.ancho + A_{2}.ancho, B.y = A_{1}.y \} B \\
-                          \{ A_{1}.h\_up = max(C_{1}.h\_up, C_{1}.h\_down), 
-                             A_{1}.h\_down = max(C_{1}.h\_up, C_{1}.h\_down), 
+                          \{ B.tam = 1, B.x = A_{2}.x + A_{2}.ancho, B.y = A_{1}.y \} B \\
+                          \{ A_{1}.h\_up = max(A_{2}.h\_up, B.h\_up), 
+                             A_{1}.h\_down = max(A_{2}.h\_down, B.h\_down), 
                              A_{1}.ancho = A_{2}.ancho + B.ancho \} \\ $
 
   \item $ B \rightarrow \{ C.tam = B.tam, C.x = B.x, C.y = B.y \} C \\
@@ -289,7 +289,7 @@ A partir de estos atributos, generamos la siguiente TDS:
 
 \end{itemize}
 
-Para implementar esta TDS, generamos para cada cadena de entrada un árbol sintáctico en el cual cada hoja está dada por el símbolo terminal ID. Para trabajar con el resto de los símbolos (no terminales), definimos los siguientes nodos:
+Para implementar esta TDS, generamos para cada cadena de entrada un árbol sintáctico en el cual cada hoja está dada por el símbolo terminal $l$. Para trabajar con el resto de los símbolos (no terminales), definimos los siguientes nodos:
 \begin{itemize} 
   \item (): para caracterizar a la subexpresión contenida entre las ER `` ( '' y `` ) ''. Cuenta con 1 hijo
   \item CONCAT: para caracterizar la concatenación de dos subexpresiones válidas. Cuenta con 2 hijos
@@ -303,7 +303,7 @@ Para implementar esta TDS, generamos para cada cadena de entrada un árbol sint�
 Cada nodo y cada hoja tiene los mismos 6 atributos que tienen los símbolos de nuestra gramática. Para heredar y sintetizar de forma correcta dichos atributos según la TDS ya descripta, recorremos este árbol 3 veces, de forma top-down y bottom-up. Esto lo hacemos en 3 etapas (recorridos) :
 \begin{itemize}
   \item recorrer1: heredamos desde la raíz hasta las hojas el atributo \emph{tam} 
-  \item recorrer2: sintetizamos desde las hojas hasta la raíz los atributos \emph{ancho}, \emph{h\_up} y \emph{h\_down}, utilizando el atributo tam, ya calculado.
+  \item recorrer2: sintetizamos desde las hojas hasta la raíz los atributos \emph{ancho}, \emph{h\_up} y \emph{h\_down}, utilizando el atributo \emph{tam}, ya calculado.
   \item recorrer3: heredamos desde la raíz hasta las hojas los atributos \emph{x} e \emph{y}, utilizando los atributos ya calculados en los dos recorridos anteriores.
 \end{itemize}
 
