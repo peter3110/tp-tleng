@@ -50,13 +50,14 @@ class Divide(object):
 
   def dump_ast(self, out):
     self.numerador.x = self.x + self.ancho/2 - self.numerador.ancho/2
-    self.numerador.y = self.y - self.h_down - c * self.tam
+    self.numerador.y = self.y - (self.h_up + c * self.tam)
     self.numerador.dump_ast(out)
 
-    out.append( make_line(str(self.x), str(self.y), str(self.x + self.a), str(self.y), str(0.05) ) )
+    h_line = self.numerador.y + self.denominador.h_up
+    out.append( make_line(str(self.x), str(h_line), str(self.x + self.ancho), str(h_line), str(0.05) ) )
 
     self.denominador.x = self.x + self.ancho/2 - self.denominador.ancho/2
-    self.denominador.y = self.y + self.h_up + c * self.tam
+    self.denominador.y = self.y + (self.h_down + c * self.tam)
     self.denominador.dump_ast(out)
 
 
@@ -123,11 +124,11 @@ class SuperIndex(object):
 
   def dump_ast(self, out):
     self.base.x = self.x
-    self.base.y = self.y - (self.base.h_up + self.base.h_down) * 0.5
+    self.base.y = self.y
     self.base.dump_ast(out)
 
     self.index.x = self.base.x + self.base.ancho
-    self.index.y = self.base.y
+    self.index.y = self.y - (self.base.h_up + self.base.h_down) * 0.5
     self.index.dump_ast(out)
 
 
@@ -154,16 +155,16 @@ class SubIndex(object):
     self.index.recorrer2()
     self.ancho = self.base.ancho + self.index.ancho
     # CHECK CHECK
-    self.h_up = self.base.h_up + self.index.h_up * 0.5
-    self.h_down = 0
+    self.h_up = 0
+    self.h_down = self.base.h_down + self.index.h_down * 0.5
 
   def dump_ast(self, out):
     self.base.x = self.x
-    self.base.y = self.y - (self.base.h_up + self.base.h_down) * 0.5
+    self.base.y = self.y
     self.base.dump_ast(out)
 
     self.index.x = self.base.x + self.base.ancho
-    self.index.y = self.base.y
+    self.index.y = self.base.y + (self.base.h_up + self.base.h_down) * 0.5
     self.index.dump_ast(out)
 
 class SuperSubIndex(object):
@@ -193,8 +194,21 @@ class SuperSubIndex(object):
     self.sub_index.recorrer2()
     self.ancho = self.base.ancho + max(self.super_index.ancho, self.sub_index.ancho)
     # CHECK CHECK
-    self.h_up = self.base.h_up + self.super_index.h_up * 0.5 + self.sub_index.h_up * 0.5
-    self.h_down = 0
+    self.h_up   = self.base.h_up   + (self.super_index.h_up + self.sub_index.h_up) * 0.5
+    self.h_down = self.base.h_down + (self.super_index.h_down + self.sub_index.h_down) * 0.5
+
+  def dump_ast(self, out):
+    self.base.x = self.x
+    self.base.y = self.y
+    self.base.dump_ast(out)
+
+    self.super_index.x = self.base.x + self.base.ancho
+    self.super_index.y = self.base.y - (self.base.h_up + self.base.h_down) * 0.5
+    self.super_index.dump_ast(out)
+
+    self.sub_index.x = self.base.x + self.base.ancho
+    self.sub_index.y = self.base.y + (self.base.h_up + self.base.h_down) * 0.5
+    self.sub_index.dump_ast(out)
 
 
 class SubSuperIndex(object):
@@ -220,12 +234,25 @@ class SubSuperIndex(object):
 
   def recorrer2(self):
     self.base.recorrer2()
-    self.sub_index.recorrer2()
     self.super_index.recorrer2()
+    self.sub_index.recorrer2()
     self.ancho = self.base.ancho + max(self.super_index.ancho, self.sub_index.ancho)
     # CHECK CHECK
-    self.h_up = self.base.h_up + self.super_index.h_up * 0.5 + self.sub_index.h_up * 0.5
-    self.h_down = 0
+    self.h_up   = self.base.h_up   + (self.super_index.h_up + self.sub_index.h_up) * 0.5
+    self.h_down = self.base.h_down + (self.super_index.h_down + self.sub_index.h_down) * 0.5
+
+  def dump_ast(self, out):
+    self.base.x = self.x
+    self.base.y = self.y
+    self.base.dump_ast(out)
+
+    self.super_index.x = self.base.x + self.base.ancho
+    self.super_index.y = self.base.y - (self.base.h_up + self.base.h_down) * 0.5
+    self.super_index.dump_ast(out)
+
+    self.sub_index.x = self.base.x + self.base.ancho
+    self.sub_index.y = self.base.y + (self.base.h_up + self.base.h_down) * 0.5
+    self.sub_index.dump_ast(out)
 
 class Parenthesis(object):
   def __init__(self, content):
@@ -248,7 +275,7 @@ class Parenthesis(object):
     self.h_up = self.content.h_up
     self.h_down = self.content.h_down
 
-  def dump_ast(out):
+  def dump_ast(self, out):
     self.content.x = self.x
     self.content.y = self.y
     out.append( make_open_paren(str(0), str(0), str(1), str(self.x - 0.45),str(self.y + self.h_up * 0.6),
