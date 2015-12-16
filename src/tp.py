@@ -11,12 +11,6 @@ from sys import argv, exit
 import ply.lex as lex
 import ply.yacc as yacc
 
-def dump_ast(ast):
-  pdb.set_trace()
-  res = ""
-  return res
-
-
 if __name__ == "__main__":
   # Build the lexer
   lexer = lex.lex(module=lexer_rules)
@@ -35,10 +29,16 @@ if __name__ == "__main__":
     # el comportamiento de la TDS, la implementacion de los recorrer deberia vivir en la definicion de las clases
     ast.recorrer()
     ast.recorrer2()
+    out = []
+    out.append ( '''<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"> <svg xmlns="http://www.w3.org/2000/svg" version="1.1"> <g transform="translate(0, 50) scale(50)" font-family= "Courier">''' )
 
-    result = dump_ast(ast)
-    print result
+    ast.dump_ast(out)
 
+    out.append ( '''</g>
+                    </svg> ''' )
+    open('fig.svg','w').write(''.join(out))
+
+    print out
 
 # # ejemplo del tp: (A^BC^D/E^F_G+H)-I
 # '''
