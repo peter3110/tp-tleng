@@ -118,7 +118,7 @@ Universidad de Buenos Aires
 \vspace{4cm}
 
 \begin{Huge}
-Trabajo Práctico 1
+Trabajo Práctico 1 - Reentrega
 \end{Huge}
 
 \vspace{0.5cm}
@@ -148,6 +148,14 @@ Matias Pizzagali & 257/12 & matipizza@gmail.com \\
 
 \tableofcontents
 
+\section{Correcciones realizadas}
+Para la reentrega del TP, realizamos las siguientes modificaciones respecto de la primera entrega:
+\begin{itemize}
+  \item Rehicimos el código, utilizando clases, aplicando `` buenas prácticas '' de programación
+  \item Mejoramos la explicación sobre cómo realizamos el TP; agregamos al informe la TDS que generamos para resolver el problema propuesto
+  \item Añadimos casos de test exitosos y fallidos 
+\end{itemize}
+
 \newpage
 
 
@@ -155,18 +163,18 @@ Matias Pizzagali & 257/12 & matipizza@gmail.com \\
 El objetivo de este trabajo práctico es desarrollar un compositor de fórmulas matemáticas. El mismo tomará como entrada la descripción de una fórmula en una versión muy simplificada del lenguaje utilizado por LATEX y producirá como salida un archivo SVG (Scalable Vector Graphics).
 
 \section{Desarrollo}
-Para poder realizar el TP, utilizamos la librería PLY para Python, la cual implementa Lex y Yacc enteramente en Python. Este analizador léxico y sintáctico nos permitirá aceptar o no aceptar cadenas de entrada de acuerdo a la gramática que definamos.
+Para poder realizar el TP, utilizamos la librería PLY para Python, la cual implementa Lex y Yacc enteramente en Python. Este analizador léxico y sintáctico nos permitirá aceptar o rechazar cadenas de entrada de acuerdo a la gramática que definamos.
 
-Definimos los siguientes tokens, con sus respectivas expresiones regulares:
+Una de las cosas que tuvimos que hacer para poder utilizar esta herramienta fue definir para este problema en particular los siguientes tokens, con sus respectivas expresiones regulares:
 \begin{itemize}
-  \item ID (para cualquier caracter distinto a \_, \detokenize{^}, (, ), \{ y \} )
-  \item SUBINDEX (para la ER `` / '')
-  \item SUPERINDEX (para la ER `` \detokenize{^} '')
-  \item DIVIDE ( para la ER `` /'' )
-  \item LPAREN ( para la ER `` ( '' )
-  \item RPAREN ( para la ER `` ) '')
-  \item LBRACKET ( para la ER `` \{ '')
-  \item RBRACKET ( para la ER `` \} '')
+  \item ID : para cualquier caracter distinto a \_, \detokenize{^}, (, ), \{ y \}
+  \item SUBINDEX : para la ER `` / ''
+  \item SUPERINDEX : para la ER `` \detokenize{^} ''
+  \item DIVIDE : para la ER `` /'' 
+  \item LPAREN : para la ER `` ( '' 
+  \item RPAREN : para la ER `` ) ''
+  \item LBRACKET : para la ER `` \{ ''
+  \item RBRACKET : para la ER `` \} ''
 \end{itemize}
 
 \subsection{Desambiguación de la gramática}
@@ -206,115 +214,113 @@ C & $\rightarrow$ & \detokenize{(}        & E & \detokenize{)} & & \\
 
 La gramática propuesta inicialmente fue la de la izquierda. Sin embargo, al utilizar esta gramática para hacer el parsing, se generan conflictos Shift/Reduce. Esto es debido a que la gramática es ambigua (para una misma cadena pueden haber más de un árbol de derivación posibles). Luego, para evitar conflictos Shift/Reduce, generamos la otra gramática expuesta, equivalente a la anterior pero con la diferencia de que no es ambigua.
 
-Tuvimos en cuenta que la división es la operación de menor precedencia, seguida de la concatenación, luego de los subíndice y superíndice y luego por lo paréntesis y corchetes. También que división y concatenación son asociativas a izquierda y que subíndice y superíndice no son asociativos.
+Tuvimos en cuenta que la división es la operación de menor precedencia, seguida de la concatenación, luego los subíndice y superíndice y finalmente los paréntesis y corchetes. También que división y concatenación son asociativas a izquierda y que subíndice y superíndice no son asociativos.
 
 \subsection{TDS y Atributos}
-Para cada uno de los símbolos A,B,C,E, definimos los siguientes atributos heredados de tipo entero:
+Para cada uno de los símbolos S,A,B,C,E (no terminales) y ID (terminal) definimos los siguientes atributos heredados de tipo float:
 \begin{itemize}
   \item $x$ : para guardar el comienzo de cada subexpresión sobre el eje x
   \item $y$ : para guardar el comienzo de cada subexpresión sobre el eje y
-  \item $tam$ : para guardar la altura total de cada subexpresión
+  \item $tam$ : para guardar el tamaño (escala) de cada subexpresión
 \end{itemize}
 
-Y también los siguientes atributos sintetizados, también de tipo entero.
+Y los siguientes atributos sintetizados, también de tipo float.
 \begin{itemize}
   \item $ancho$ : para guardar el ancho de cada subexpresión
-  \item $h\_up$ : contiene la distancia que ocupa una expresion entre la linea sobre la que se escriben los caracteres y el techo de la expresión, vista como un rectángulo.
-  \item $h\_down$ : contiene la distancia que ocupa una expresion entre la linea sobre la que se escriben los caracteres y la línea de base de la expresión, vista como un rectángulo.
-  \item $altura$ : contiene la altura total de la expresión. Es la suma de $h\_up$ y $h\_down$
+  \item $h\_up$ : considerando que cada expresión esta encapsuladad en un rectángulo, este atributo contiene la distancia que hay entre la línea sobre la que se escriben los caracteres y el techo del rectángulo
+  \item $h\_down$ : igual que $h\_up$, con la diferencia que contiene la distancia que hay entre la línea sobre la que se escriben los caracteres y la base del rectángulo
+  \item $altura$ : contiene la altura total de la subexpresión. Es la suma de $h\_up$ y $h\_down$, y agregamos este atributo sólo por comodidad
 \end{itemize}
 
 A partir de estos atributos, generamos la siguiente TDS:
 
 
-% TODO: remarcar letras en negrita
-
 \begin{itemize}
 
-  \item $ S   \rightarrow \{ E.tam = 1, E.x = 0, E.y = 0 \} E \\ $
+  \item $ S   \rightarrow \{ E.tam = 1, E.x = 0, E.y = 0 \} \textbf{E} \\ $
 
-  \item $ E   \rightarrow \{ A.tam = E.tam, A.x = E.x, A.y = E.y \} A \\ $
+  \item $ E   \rightarrow \{ A.tam = E.tam, A.x = E.x, A.y = E.y \} \textbf{A} \\ $
 
   \item $ E_1 \rightarrow \{ E_{2}.tam = E_{1}.tam,
                            E_{2}.x = E_{1}.x + E_1.ancho / 2 - E_2.ancho / 2,
-                           E_{2}.y = E_{1}.y - E_2.h\_down - 0.2 * E_1.tam \} E_2 / \\
+                           E_{2}.y = E_{1}.y - E_2.h\_down - 0.2 * E_1.tam \} \textbf{E}_2 / \\
                         \{ A.tam = E_{1}.tam,
                            A.x = E_{1}.x + E_1.ancho / 2 - A.ancho / 2,
                            A.y = E_{1}.y + A.h\_up + 0.1 * E_1.tam \}
-                           A \\
+                           \textbf{A} \\
                         \{ E_{1}.h\_up = E_{2}.altura + 0.35 * E_{1}.tam,
                            E_{1}.h\_down = A.altura + 0.3 * E_1.tam,
                            E_{1}.ancho = max(E_{2}.ancho, A.ancho),
                            E_{1}.altura = E_{1}.h\_up + E_{1}.h\_down \} \\ $
 
-  \item $ A   \rightarrow \{ B.tam = 1, B.x = A.x, B.y = A.y \} B \\
+  \item $ A   \rightarrow \{ B.tam = 1, B.x = A.x, B.y = A.y \} \textbf{B} \\
                           \{ A.h\_up = B.h\_up,
                              A.h\_down = B.h\_down,
                              A.altura = B.altura,
                              A.ancho = B.ancho \} \\ $
 
-  \item $ A_1 \rightarrow \{ A_{2}.tam = A_{1}.tam, A_{2}.x = A_{1}.x, A_{2}.y = A_{1}.y \} A_2 \\
-                          \{ B.tam = 1, B.x = A_{2}.x + A_{2}.ancho, B.y = A_{1}.y \} B \\
+  \item $ A_1 \rightarrow \{ A_{2}.tam = A_{1}.tam, A_{2}.x = A_{1}.x, A_{2}.y = A_{1}.y \} \textbf{A}_2 \\
+                          \{ B.tam = 1, B.x = A_{2}.x + A_{2}.ancho, B.y = A_{1}.y \} \textbf{B} \\
                           \{ A_{1}.h\_up = max(A_{2}.h\_up, B.h\_up),
                              A_{1}.h\_down = max(A_{2}.h\_down, B.h\_down),
                              A_{1}.ancho = A_{2}.ancho + B.ancho,
                              A_{1}.altura = A_{1}.h\_up + A_{1}.h\_down \} \\ $
 
-  \item $ B \rightarrow \{ C.tam = B.tam, C.x = B.x, C.y = B.y \} C \\
+  \item $ B \rightarrow \{ C.tam = B.tam, C.x = B.x, C.y = B.y \} \textbf{C} \\
                         \{ B.ancho = C.ancho, B.h\_up = C.h\_up, B.h\_down = C.h\_down \} \\ $
 
-  \item $ B \rightarrow ID \{ B.h\_up = 0.8 * B.tam, B.h\_down = 0.2 * B.tam,
+  \item $ B \rightarrow \textbf{ID} \{ B.h\_up = 0.8 * B.tam, B.h\_down = 0.2 * B.tam,
                               B.altura = B.\_up + B.h\_down, B.ancho = 0.6 * B.tam \} \\ $
 
-  \item $ B \rightarrow \textbf{\{} \{ E.x = B.x, E.y = B.y, E.tam = B.tam \} E \textbf{\}}ds \\
-                          \{ B.h\_up = E.h\_up, B.h\_down = E.h\_down, B.ancho = E.ancho \} \\ $
 
-
-  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \} C_1 \detokenize{^} \\
+  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \} \textbf{C}_1 \detokenize{^} \\
                         \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho,
-                           C_{2}.y = C_{1}.y - C_{2}.h\_down - 0.5 * C_{1}.tam \} C_2 \\
+                           C_{2}.y = C_{1}.y - C_{2}.h\_down - 0.5 * C_{1}.tam \} \textbf{C}_2 \\
                         \{ B.ancho = C_{1}.ancho + C_{2}.ancho,
                            B.h\_up = C_{1}.h\_up + C_{2}.altura * 0.7,
                            B.h\_down = C_{1}.h\_down
                            B.altura = B.h\_down + B.h\_up \} \\ $
 
   \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \}
-                        C_1 \_ \\
+                        \textbf{C}_1 \_ \\
                         \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho,
                            C_{2}.y = C_{1}.y + C_{2}.h\_up \}
-                        C_2 \\
+                        \textbf{C}_2 \\
                         \{ B.ancho = C_{1}.ancho + C_{2}.ancho,
                            B.h\_up = C_{1}.h\_up,
                            B.h\_down = C_{1}.h\_down + 0.7 * C_{2}.altura,
                            B.altura = B.h\_up + B.h\_down \} \\ $
 
-  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \} C_1 \detokenize{^} \\
+  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \} \textbf{C}_1 \detokenize{^} \\
                         \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho,
                            C_{2}.y = C_{1}.y - C_{2}.h\_down - 0.5 * C_{1}.tam \}
-                        C_2 \_ \\
+                        \textbf{C}_2 \_ \\
                         \{ C_{3}.tam = C_{1}.tam * 0.7, C_{3}.x = C_{1}.x + C_{1}.ancho,
                            C_{3}.y = C_{1}.y + C_{3}.h\_up \}
-                        C_3 \\
+                        \textbf{C}_3 \\
                         \{ B.ancho = C_{1}.ancho + max(C_{2}.ancho, C_{2}.ancho),
                            B.h\_up = C_{1}.h\_up + C_{2}.altura * 0.7,
                            B.h\_down = C_{1}.h\_down + C_{3}.altura * 0.7,
                            B.altura = B.h\_up + B.h\_down \} \\ $
 
   \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \}
-                           C_1 \_ \\
+                           \textbf{C}_1 \_ \\
                         \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho,
                            C_{2}.y = C_{1}.y + C_{2}.h\_up \}
-                        C_2 \detokenize{^} \\
+                        \textbf{C}_2 \detokenize{^} \\
                         \{ C_{3}.tam = C_{1}.tam * 0.7, C_{3}.x = C_{1}.x + C_{1}.ancho,
                            C_{3}.y = C_{1}.y - C_{3}.h\_down - 0.5 * C_{1}.tam \}
-                        C_3 \\
+                        \textbf{C}_3 \\
                         \{ B.ancho = C_{1}.ancho + max(C_{2}.ancho, C_{2}.ancho),
                            B.h\_up = C_{1}.h\_up + C_{3}.altura * 0.7,
                            B.h\_down = C_{1}.h\_down + C_{2}.altura * 0.7,
                            B.altura = B.h\_up + B.h\_down \} \\ $
 
+   \item $ B \rightarrow \textbf{\{} \{ E.x = B.x, E.y = B.y, E.tam = B.tam \} \textbf{E} \textbf{\}}ds \\
+                          \{ B.h\_up = E.h\_up, B.h\_down = E.h\_down, B.ancho = E.ancho \} \\ $
+
   \item $ B \rightarrow \textbf{(} \{ E.x = B.x + B.tam * 0.3, E.y = B.y, E.tam = B.tam \}
-                        E \textbf{)} \\
+                        \textbf{E} \textbf{)} \\
                         \{
                         B.h\_up = E.h\_up,
                         B.h\_down = E.h\_down,
@@ -323,15 +329,17 @@ A partir de estos atributos, generamos la siguiente TDS:
 
 \end{itemize}
 
-Para implementar esta TDS, generamos para cada cadena de entrada un árbol sintáctico en el cual cada hoja está dada por el símbolo terminal $l$. Para trabajar con el resto de los símbolos (no terminales), definimos los siguientes nodos:
+Para implementar esta TDS, generamos para cada cadena de entrada un árbol sintáctico en el cual cada hoja está dada por el símbolo terminal $l$. Llamamos al nodo-hoja que va a caracterizar a este símbolo terminal ID.
+
+Para trabajar con el resto de los símbolos (no terminales), definimos los siguientes nodos:
 \begin{itemize}
-  \item ROOT: es el nodo raíz. Allí inicializamos el tamaño inicial de la subexpresión, y calculamos la posición $y$ de la expresión para que posteriormente quede centrada en el espacio donde la dibujamos. Tiene 1 hijo.
+  \item ROOT: es el nodo raíz. Allí inicializamos el tamaño inicial de la expresión, y calculamos la posición $y$ de la expresión para que posteriormente quede centrada en el espacio donde la dibujamos. Tiene 1 hijo.
   \item (): para caracterizar a la subexpresión contenida entre las ER `` ( '' y `` ) ''. Cuenta con 1 hijo
   \item CONCAT: para caracterizar la concatenación de dos subexpresiones válidas. Cuenta con 2 hijos
   \item SUPERINDEX: para caracterizar dos subexpresiones unidas por la ER \detokenize{^}. Cuenta con 2 hijos
   \item SUBINDEX: para caracterizar dos subexpresiones unidas por la ER \_ . Cuenta con 2 hijos
-  \item SUBSUPERINDEX: para caracterizar tres subexpresiones unidas primero por un \_ y luego por un \detokenize{^}. Cuenta con 3 hijos
-  \item SUPERSUBINDEX: para caracterizar tres subexpresiones unidas primero por un \detokenize{^} y luego por un \_ . Cuenta con 3 hijos
+  \item SUBSUPERINDEX: para caracterizar tres subexpresiones unidas las primeras dos por un \_ y la segunda y tercera por un \detokenize{^}. Cuenta con 3 hijos
+  \item SUPERSUBINDEX: para caracterizar tres subexpresiones unidas las primeras dos por un \detokenize{^} y las segunda y tercera por un \_ . Cuenta con 3 hijos
   \item DIVISION: para caracterizar dos subexpresiones unidas mediante la ER de división, `` / ''. Cuenta con 2 hijos
 \end{itemize}
 
@@ -339,28 +347,96 @@ Cada nodo y cada hoja tiene los mismos 7 atributos que tienen los símbolos de n
 \begin{itemize}
   \item recorrer1: heredamos desde la raíz hasta las hojas el atributo \emph{tam}
   \item recorrer2: sintetizamos desde las hojas hasta la raíz los atributos \emph{altura}, \emph{ancho}, \emph{h\_up} y \emph{h\_down}, utilizando el atributo \emph{tam}, ya calculado.
-  \item recorrer3: heredamos desde la raíz hasta las hojas los atributos \emph{x} e \emph{y}, utilizando los atributos ya calculados en los dos recorridos anteriores. Como en esta etapa obtenemos el árbol decorado correctamente con todos los atributos, también aquí generamos el archivo SVG que buscamos, a partir de un nuevo recorrido top-down del árbol sintáctico.
+  \item recorrer3: heredamos desde la raíz hasta las hojas los atributos \emph{x} e \emph{y}, utilizando los atributos ya calculados en los dos recorridos anteriores. Como en esta etapa obtenemos el árbol decorado correctamente con todos los atributos, también aquí generamos el archivo SVG buscado.
 \end{itemize}
 
 \section{Resultados y casos de prueba}
 % http://tex.stackexchange.com/questions/112052/how-to-arrage-multiple-figures
+A continuación, exponemos una serie de figuras, cada una obtenida a partir de la cadena que nombra a dicha figura.
 
-\begin{figure}
+\begin{figure}[H]
+\subfloat[]{\label{duck2}%
+  \begin{minipage}{\columnwidth}\footnotesize
+  \centering
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej7.png}}{X\_Y\detokenize{^}ZG\detokenize{^}F\_H}
+  \qquad
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej6.png}}{x\detokenize{^}2+x+\{1/2\}}
+  \qquad
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej8.png}}{A\detokenize{^}\{BC/D\_F\detokenize{^}H\}}
+  \end{minipage}}
 
 \subfloat[]{\label{duck2}%
   \begin{minipage}{\columnwidth}\footnotesize
   \centering
-  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej1.png}}{First Duck}
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej5.png}}{{x\detokenize{^}2+x+1}/2}
   \qquad
-  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej2.png}}{Second Duck}
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej4.png}}{abc/a/cdefg}
   \qquad
-  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej3.png}}{Third Duck}
-  \end{minipage}}
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej10.png}}{A+B+C\detokenize{^}\{2/3\}/\{A\detokenize{^}B-B\detokenize{^}\{3\detokenize{^}3\}\}}
+  \end{minipage}
+ }
 \end{figure}
+
+\begin{figure}[H]
+\subfloat[]{\label{duck2}%
+  \begin{minipage}{\columnwidth}\footnotesize
+  \centering
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej16.png}}{((A/B))}
+  \qquad
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej14.png}}{abc/(\{e/f\}+a)}
+  \qquad
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej15.png}}{(\{a\_\{c\_d\}/b\detokenize{^}\{c\detokenize{^}d\}\})+(\{a\detokenize{^}\{b\detokenize{^}c\}/d\_\{c\_e\}\})}
+  \end{minipage}
+}
+
+\subfloat[]{\label{duck2}%
+  \begin{minipage}{\columnwidth}\footnotesize
+  \centering
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej11.png}}{\{A+B/A\detokenize{^}2\}+A\_B/\{A\detokenize{^}B+\{C\detokenize{^}B/D\}}
+  \qquad
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej13.png}}{(A\detokenize{^}BC\detokenize{^}D/E\detokenize{^}F\_G+H)-I}
+  \qquad
+  \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej17.png}}{(A\detokenize{^}C+(H/F)\detokenize{^}2/B\detokenize{^}{C\detokenize{^}D}+(xyz))}
+  \end{minipage}
+ }
+\end{figure}
+
+A continuación exponemos algunos ejemplos de cadenas que no son aceptadas por el programa (debido a que no son aceptadas por la gramática usada):
+\begin{table}[H]
+  \begin{tabular}{|c|c|}
+  \hline
+  \{A & Error: Cadena no valida \\
+  \hline
+  A\detokenize{^}B\detokenize{^}C & Error: Cadena no valida \\
+  \hline
+  A\_B\_C & Error: Cadena no valida \\
+  \hline
+  A\_(B\_)C & Error: Cadena no valida \\
+  \hline
+  \end{tabular}
+  \quad \quad \quad
+  \begin{tabular}{|c|c|}
+  \hline
+  A//B & Error: Cadena no valida \\
+  \hline
+  () & Error: Cadena no valida \\
+  \hline
+  \{(\}) & Error: Cadena no valida \\
+  \hline
+  \{(AB\}AB) & Error: Cadena no valida \\
+  \hline
+  \end{tabular}
+
+\end{table}
 
 
 \section{Manual de usuario}
 Para correr el TP, es necesario tener instalado Python 2.7 o posterior y la librería PLY, que puede obtenerse en https://pypi.python.org/pypi/ply. Para correr el tp, abrir una terminal en la carpeta src, y ejecutar el comando `` python tp.py ''. A continuación, introducir la cadena que se desea generar. Se genera la figura deseada con la extensión `` .svg '' en el archivo `` figura.svg ''.
+
+\section{Conclusiones}
+La realización de este Trabajo Práctico fue interesante, ya que nos permitió generar una aplicación concreta de toda la teoría vista en la segunda parte de la materia, básicamente sobre gramáticas de atributos y traducción dirigida por sintaxis (TDS). Entendimos mejor la relación que hay entre un árbol sintáctico, una gramática y una TDS para la generación de una herramienta de parsing de utilidad en la vida real.
+
+Como se puede ver en los casos de test, las figuras que genera nuestro programa son de un nivel de calidad aceptable ya que en todos los casos expuestos se nota muy bien cuál es la expresión lógica-matemática que se pretende generar. Obviamente la herramienta podría ser mejorada para que las figuras queden `` más lindas '', pero por lo que vimos en el desarrollo del TP, esta no es una tarea fácil ya que para hacer esto hay que hacer mucha experimentación y fijar una gran variedad de parámetros y constantes para considerar la gran variedad de combinaciones que se pueden generar a partir los símbolos y la gramática considerada.
 
 
 \section{Codigo}
