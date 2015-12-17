@@ -149,7 +149,7 @@ Matias Pizzagali & 257/12 & matipizza@gmail.com \\
 El objetivo de este trabajo práctico es desarrollar un compositor de fórmulas matemáticas. El mismo tomará como entrada la descripción de una fórmula en una versión muy simplificada del lenguaje utilizado por LATEX y producirá como salida un archivo SVG (Scalable Vector Graphics).
 
 \section{Desarrollo}
-Para poder realizar el TP, utilizamos la librería PLY para Python, la cual implementa Lex y Yacc enteramente en Python. Usa parsing LALR(1), y nos permitirá aceptar o no aceptar cadenas de entrada de acuerdo a la gramática que definamos.
+Para poder realizar el TP, utilizamos la librería PLY para Python, la cual implementa Lex y Yacc enteramente en Python. Este analizador léxico y sintáctico nos permitirá aceptar o no aceptar cadenas de entrada de acuerdo a la gramática que definamos.
 
 Definimos los siguientes tokens, con sus respectivas expresiones regulares: 
 \begin{itemize}
@@ -203,17 +203,25 @@ La gramática propuesta inicialmente fue la de la izquierda. Sin embargo, al uti
 Tuvimos en cuenta que la división es la operación de menor precedencia, seguida de la concatenación, luego de los subíndice y superíndice y luego por lo paréntesis y corchetes. También que división y concatenación son asociativas a izquierda y que subíndice y superíndice no son asociativos.
 
 \subsection{TDS y Atributos}
-Para cada uno de los símbolos A,B,C,E, definimos los siguientes atributos de tipo enteros (los primeros 3 heredados, y los últimos 3 sintetizados).
+Para cada uno de los símbolos A,B,C,E, definimos los siguientes atributos heredados de tipo entero:
 \begin{itemize}
   \item $x$ : para guardar el comienzo de cada subexpresión sobre el eje x
   \item $y$ : para guardar el comienzo de cada subexpresión sobre el eje y
-  \item $tam$ : para guardar el alto de cada subexpresión válida
-  \item $h\_up$ : para tener en cuenta desplazamientos extra hacia arriba de cada expresión
-  \item $h\_down$: para tener en cuenta desplazamientos extra hacia abajo de cada expresión
-  \item $ancho$ : para guardar el ancho de cada subexpresión válida
+  \item $tam$ : para guardar la altura total de cada subexpresión
+\end{itemize}
+
+Y también los siguientes atributos sintetizados, también de tipo entero.
+\begin{itemize}
+  \item $ancho$ : para guardar el ancho de cada subexpresión
+  \item $h\_up$ : contiene la distancia que ocupa una expresion entre la linea sobre la que se escriben los caracteres y el techo de la expresión, vista como un rectángulo.
+  \item $h\_down$ : contiene la distancia que ocupa una expresion entre la linea sobre la que se escriben los caracteres y la línea de base de la expresión, vista como un rectángulo.
+  \item $altura$ : contiene la altura total de la expresión. Es la suma de $h\_up$ y $h\_down$
 \end{itemize}
 
 A partir de estos atributos, generamos la siguiente TDS:
+
+
+% TODO: remarcar letras en negrita
 
 \begin{itemize}
 
@@ -222,75 +230,96 @@ A partir de estos atributos, generamos la siguiente TDS:
   \item $ E   \rightarrow \{ A.tam = E.tam, A.x = E.x, A.y = E.y \} A \\ $
 
   \item $ E_1 \rightarrow \{ E_{2}.tam = E_{1}.tam, 
-                             E_{2}.x = E_{1}.x + ALGO, 
-                             E_{2}.y = E_{1}.y + ALGO \} E_2 / \\
-                          \{ A.tam = E_{1}.tam, 
-                             A.x = E_{1}.x + ALGO, 
-                             A.y = E_{1}.y + ALGO \} A \\
-                          \{ E_{1}.h\_up = E_{2}.h\_down + E_{2}.h\_up, 
-                             E_{1}.h\_down = A.h\_down + A.h\_up, 
-                             E_{1}.ancho = max(E_{2}.ancho, A.ancho) \} \\ $
+                           E_{2}.x = E_{1}.x + E_1.ancho / 2 - E_2.ancho / 2, 
+                           E_{2}.y = E_{1}.y - E_2.h\_down - 0.2 * E_1.tam \} E_2 / \\
+                        \{ A.tam = E_{1}.tam, 
+                           A.x = E_{1}.x + E_1.ancho / 2 - A.ancho / 2, 
+                           A.y = E_{1}.y + A.h\_up + 0.1 * E_1.tam \} 
+                           A \\
+                        \{ E_{1}.h\_up = E_{2}.altura + 0.35 * E_{1}.tam, 
+                           E_{1}.h\_down = A.altura + 0.3 * E_1.tam, 
+                           E_{1}.ancho = max(E_{2}.ancho, A.ancho),
+                           E_{1}.altura = E_{1}.h\_up + E_{1}.h\_down \} \\ $
 
   \item $ A   \rightarrow \{ B.tam = 1, B.x = A.x, B.y = A.y \} B \\
                           \{ A.h\_up = B.h\_up, 
-                             A.h\_down = B.h\_down, 
+                             A.h\_down = B.h\_down,
+                             A.altura = B.altura,
                              A.ancho = B.ancho \} \\ $
 
   \item $ A_1 \rightarrow \{ A_{2}.tam = A_{1}.tam, A_{2}.x = A_{1}.x, A_{2}.y = A_{1}.y \} A_2 \\
                           \{ B.tam = 1, B.x = A_{2}.x + A_{2}.ancho, B.y = A_{1}.y \} B \\
                           \{ A_{1}.h\_up = max(A_{2}.h\_up, B.h\_up), 
                              A_{1}.h\_down = max(A_{2}.h\_down, B.h\_down), 
-                             A_{1}.ancho = A_{2}.ancho + B.ancho \} \\ $
+                             A_{1}.ancho = A_{2}.ancho + B.ancho,
+                             A_{1}.altura = A_{1}.h\_up + A_{1}.h\_down \} \\ $
 
   \item $ B \rightarrow \{ C.tam = B.tam, C.x = B.x, C.y = B.y \} C \\
                         \{ B.ancho = C.ancho, B.h\_up = C.h\_up, B.h\_down = C.h\_down \} \\ $
 
-  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
-                        C_1 \detokenize{^} \\
-                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \} 
-                        C_2 \\
-                        \{ B.ancho = C_{1}.ancho + C_{2}.ancho, B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
-                           B.h\_down = 0 \} \\ $
+  \item $ B \rightarrow ID \{ B.h\_up = 0.8 * B.tam, B.h\_down = 0.2 * B.tam,
+                              B.altura = B.\_up + B.h\_down, B.ancho = 0.6 * B.tam \} \\ $
 
-  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
+  \item $ B \rightarrow \textbf{\{} \{ E.x = B.x, E.y = B.y, E.tam = B.tam \} E \textbf{\}}ds \\
+                          \{ B.h\_up = E.h\_up, B.h\_down = E.h\_down, B.ancho = E.ancho \} \\ $
+
+
+  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \} C_1 \detokenize{^} \\
+                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, 
+                           C_{2}.y = C_{1}.y - C_{2}.h\_down - 0.5 * C_{1}.tam \} C_2 \\
+                        \{ B.ancho = C_{1}.ancho + C_{2}.ancho, 
+                           B.h\_up = C_{1}.h\_up + C_{2}.altura * 0.7, 
+                           B.h\_down = C_{1}.h\_down
+                           B.altura = B.h\_down + B.h\_up \} \\ $
+
+  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \}
                         C_1 \_ \\
-                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \} 
+                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, 
+                           C_{2}.y = C_{1}.y + C_{2}.h\_up \} 
                         C_2 \\
-                        \{ B.ancho = C_{1}.ancho + C_{2}.ancho, B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
-                           B.h\_down = 0 \} \\ $
+                        \{ B.ancho = C_{1}.ancho + C_{2}.ancho, 
+                           B.h\_up = C_{1}.h\_up, 
+                           B.h\_down = C_{1}.h\_down + 0.7 * C_{2}.altura,
+                           B.altura = B.h\_up + B.h\_down \} \\ $
 
-  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \}
-                        C_1 \detokenize{^} \\
-                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \}
+  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \} C_1 \detokenize{^} \\
+                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, 
+                           C_{2}.y = C_{1}.y - C_{2}.h\_down - 0.5 * C_{1}.tam \}
                         C_2 \_ \\
-                        \{ C_{3}.tam = C_{1}.tam * 0.7, C_{3}.x = C_{1}.x + C_{1}.ancho, C_{3}.y = C_{1}.y \}
+                        \{ C_{3}.tam = C_{1}.tam * 0.7, C_{3}.x = C_{1}.x + C_{1}.ancho, 
+                           C_{3}.y = C_{1}.y + C_{3}.h\_up \}
                         C_3 \\
-                        \{ B.ancho = C_{1}.ancho + C_{2}.ancho + C_{2}.ancho, 
-                           B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
-                           B.h\_down = ? \} \\ $
+                        \{ B.ancho = C_{1}.ancho + max(C_{2}.ancho, C_{2}.ancho), 
+                           B.h\_up = C_{1}.h\_up + C_{2}.altura * 0.7, 
+                           B.h\_down = C_{1}.h\_down + C_{3}.altura * 0.7,
+                           B.altura = B.h\_up + B.h\_down \} \\ $
 
-  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y - ((B.h\_up + B.h\_down) * 0.5) \} 
-                        C_1 \_ \\
-                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, C_{2}.y = C_{1}.y \} 
+  \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \} 
+                           C_1 \_ \\
+                        \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho, 
+                           C_{2}.y = C_{1}.y + C_{2}.h\_up \}
                         C_2 \detokenize{^} \\
-                        \{ C_{3}.tam = C_{1}.tam * 0.7, C_{3}.x = C_{1}.x + C_{1}.ancho, C_{3}.y = C_{1}.y \} 
+                        \{ C_{3}.tam = C_{1}.tam * 0.7, C_{3}.x = C_{1}.x + C_{1}.ancho, 
+                           C_{3}.y = C_{1}.y - C_{3}.h\_down - 0.5 * C_{1}.tam \}
                         C_3 \\
-                        \{ B.ancho = C_{1}.ancho + C_{2}.ancho + C_{2}.ancho, 
-                           B.h\_up = C_{1}.h\_up + C_{2}.h\_up * 0.5, 
-                           B.h\_down = ? \} $
+                        \{ B.ancho = C_{1}.ancho + max(C_{2}.ancho, C_{2}.ancho), 
+                           B.h\_up = C_{1}.h\_up + C_{3}.altura * 0.7, 
+                           B.h\_down = C_{1}.h\_down + C_{2}.altura * 0.7,
+                           B.altura = B.h\_up + B.h\_down \} \\ $ 
 
-  \item $ B \rightarrow \{ E.x = B.x, E.y = B.y, E.tam = B.tam \} ( E ) \\
-                          \{ B.h\_up = E.h\_up, B.h\_down = E.h\_down, B.ancho = E.ancho \} \\ $
-
-  \item $ B \rightarrow \{ E.x = B.x, E.y = B.y, E.tam = B.tam \} \{ E \} \\
-                          \{ B.h\_up = E.h\_up, B.h\_down = E.h\_down, B.ancho = E.ancho \} \\ $
-
-  \item $ B \rightarrow ID \{ B.h\_up = 0.6 * B.tam, B.h\_down = 0, B.ancho = 0.6 * B.tam \} \\ $  
+  \item $ B \rightarrow \textbf{(} \{ E.x = B.x + B.tam * 0.3, E.y = B.y, E.tam = B.tam \} 
+                        E \textbf{)} \\
+                        \{ 
+                        B.h\_up = E.h\_up, 
+                        B.h\_down = E.h\_down, 
+                        B.ancho = E.ancho + 2 * B.tam * 0.3,
+                        B.altura = B.h\_down + B.h\_up \} \\ $
 
 \end{itemize}
 
 Para implementar esta TDS, generamos para cada cadena de entrada un árbol sintáctico en el cual cada hoja está dada por el símbolo terminal $l$. Para trabajar con el resto de los símbolos (no terminales), definimos los siguientes nodos:
 \begin{itemize} 
+  \item START: es el nodo raíz. Allí inicializamos el tamaño inicial de la subexpresión, y calculamos la posición $y$ de la expresión para que posteriormente quede centrada en el espacio donde la dibujamos. Tiene 1 hijo.
   \item (): para caracterizar a la subexpresión contenida entre las ER `` ( '' y `` ) ''. Cuenta con 1 hijo
   \item CONCAT: para caracterizar la concatenación de dos subexpresiones válidas. Cuenta con 2 hijos
   \item SUPERINDEX: para caracterizar dos subexpresiones unidas por la ER \detokenize{^}. Cuenta con 2 hijos
@@ -300,20 +329,18 @@ Para implementar esta TDS, generamos para cada cadena de entrada un árbol sint�
   \item DIVISION: para caracterizar dos subexpresiones unidas mediante la ER de división, `` / ''. Cuenta con 2 hijos
 \end{itemize}
 
-Cada nodo y cada hoja tiene los mismos 6 atributos que tienen los símbolos de nuestra gramática. Para heredar y sintetizar de forma correcta dichos atributos según la TDS ya descripta, recorremos este árbol 3 veces, de forma top-down y bottom-up. Esto lo hacemos en 3 etapas (recorridos) :
+Cada nodo y cada hoja tiene los mismos 7 atributos que tienen los símbolos de nuestra gramática. Para heredar y sintetizar de forma correcta dichos atributos según la TDS ya descripta, recorremos este árbol 3 veces (la primera y última de forma top-down y la segunda bottom-up). Esto lo hacemos en los siguientes 3 recorridos (etapas):
 \begin{itemize}
   \item recorrer1: heredamos desde la raíz hasta las hojas el atributo \emph{tam} 
-  \item recorrer2: sintetizamos desde las hojas hasta la raíz los atributos \emph{ancho}, \emph{h\_up} y \emph{h\_down}, utilizando el atributo \emph{tam}, ya calculado.
-  \item recorrer3: heredamos desde la raíz hasta las hojas los atributos \emph{x} e \emph{y}, utilizando los atributos ya calculados en los dos recorridos anteriores.
+  \item recorrer2: sintetizamos desde las hojas hasta la raíz los atributos \emph{altura}, \emph{ancho}, \emph{h\_up} y \emph{h\_down}, utilizando el atributo \emph{tam}, ya calculado.
+  \item recorrer3: heredamos desde la raíz hasta las hojas los atributos \emph{x} e \emph{y}, utilizando los atributos ya calculados en los dos recorridos anteriores. Como en esta etapa obtenemos el árbol decorado correctamente con todos los atributos, también aquí generamos el archivo SVG que buscamos, a partir de un nuevo recorrido top-down del árbol sintáctico.
 \end{itemize}
-
-Una vez que tenemos el árbol decorado correctamente con todos los atributos, pasamos a generar el archivo SVG deseado, a partir de un nuevo recorrido top-down del árbol sintáctico.
 
 \section{Resultados y casos de prueba}
 
 
 \section{Manual de usuario}
-Para correr el TP, es necesario tener instalado Python 2.7 o posterior y la librería PLY, que puede obtenerse en https://pypi.python.org/pypi/ply. Para correr el tp, abrir una terminal en la carpeta src, y ejecutar el comando `` python tp.py ''. A continuación, introducir la cadena que se desea generar y hacer enter. Se genera la figura deseada en el archivo `` imagen.svg ''.
+Para correr el TP, es necesario tener instalado Python 2.7 o posterior y la librería PLY, que puede obtenerse en https://pypi.python.org/pypi/ply. Para correr el tp, abrir una terminal en la carpeta src, y ejecutar el comando `` python tp.py ''. A continuación, introducir la cadena que se desea generar. Se genera la figura deseada con la extensión `` .svg '' en el archivo `` figura.svg ''.
 
 
 \section{Codigo}
@@ -333,13 +360,8 @@ Para correr el TP, es necesario tener instalado Python 2.7 o posterior y la libr
         procnamekeys={def,class}}
 
 \subsection{tp.py}
-\lstinputlisting{../tp.py}
+%\lstinputlisting{../tp.py}
 
-\subsection{lexer_rules.py}
-\lstinputlisting{../lexerrules.py}
-
-\subsection{parser_rules.py}
-\lstinputlisting{../parserrules.py}
 
 
 \end{document}
