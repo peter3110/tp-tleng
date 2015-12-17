@@ -1,5 +1,5 @@
 A/B/C/D, masomenos safa
-{a_{c_d}/b^{c^d}}+{a^{b^c}/d_{c_e}}, funciona re bien faltaria nivelar con el +
+({a_{c_d}/b^{c^d}})+({a^{b^c}/d_{c_e}}), funciona re bien faltaria nivelar con el +
 abc/{e/f}
 
 {A^BC^D/E^F_G+H}-I
@@ -42,3 +42,15 @@ A^{BC/D}
 A+B+C^{2/3}/{A^B-B^{3^3}}
 11-
 {A+B/A^2}+A_B/{A^B+{C^B/D}}
+12-
+A_{B_D^X}^{C^E_Z}
+13-
+(A^BC^D/E^F_G+H)-I
+14-
+abc/({e/f}+a)
+15-
+({a_{c_d}/b^{c^d}})+({a^{b^c}/d_{c_e}})
+16-
+((A/B))
+17-
+(A^C+(H/F)^2/B^{C^D}+(xyz))
