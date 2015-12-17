@@ -239,8 +239,6 @@ A partir de estos atributos, generamos la siguiente TDS:
 
   \item $ S   \rightarrow \{ E.tam = 1, E.x = 0, E.y = 0 \} \textbf{E} \\ $
 
-  \item $ E   \rightarrow \{ A.tam = E.tam, A.x = E.x, A.y = E.y \} \textbf{A} \\ $
-
   \item $ E_1 \rightarrow \{ E_{2}.tam = E_{1}.tam,
                            E_{2}.x = E_{1}.x + E_1.ancho / 2 - E_2.ancho / 2,
                            E_{2}.y = E_{1}.y - E_2.h\_down - 0.2 * E_1.tam \} \textbf{E}_2 / \\
@@ -253,11 +251,7 @@ A partir de estos atributos, generamos la siguiente TDS:
                            E_{1}.ancho = max(E_{2}.ancho, A.ancho),
                            E_{1}.altura = E_{1}.h\_up + E_{1}.h\_down \} \\ $
 
-  \item $ A   \rightarrow \{ B.tam = 1, B.x = A.x, B.y = A.y \} \textbf{B} \\
-                          \{ A.h\_up = B.h\_up,
-                             A.h\_down = B.h\_down,
-                             A.altura = B.altura,
-                             A.ancho = B.ancho \} \\ $
+  \item $ E   \rightarrow \{ A.tam = E.tam, A.x = E.x, A.y = E.y \} \textbf{A} \\ $
 
   \item $ A_1 \rightarrow \{ A_{2}.tam = A_{1}.tam, A_{2}.x = A_{1}.x, A_{2}.y = A_{1}.y \} \textbf{A}_2 \\
                           \{ B.tam = 1, B.x = A_{2}.x + A_{2}.ancho, B.y = A_{1}.y \} \textbf{B} \\
@@ -266,12 +260,14 @@ A partir de estos atributos, generamos la siguiente TDS:
                              A_{1}.ancho = A_{2}.ancho + B.ancho,
                              A_{1}.altura = A_{1}.h\_up + A_{1}.h\_down \} \\ $
 
+  \item $ A   \rightarrow \{ B.tam = 1, B.x = A.x, B.y = A.y \} \textbf{B} \\
+                          \{ A.h\_up = B.h\_up,
+                             A.h\_down = B.h\_down,
+                             A.altura = B.altura,
+                             A.ancho = B.ancho \} \\ $
+
   \item $ B \rightarrow \{ C.tam = B.tam, C.x = B.x, C.y = B.y \} \textbf{C} \\
                         \{ B.ancho = C.ancho, B.h\_up = C.h\_up, B.h\_down = C.h\_down \} \\ $
-
-  \item $ B \rightarrow \textbf{ID} \{ B.h\_up = 0.8 * B.tam, B.h\_down = 0.2 * B.tam,
-                              B.altura = B.\_up + B.h\_down, B.ancho = 0.6 * B.tam \} \\ $
-
 
   \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \} \textbf{C}_1 \detokenize{^} \\
                         \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho,
@@ -316,16 +312,19 @@ A partir de estos atributos, generamos la siguiente TDS:
                            B.h\_down = C_{1}.h\_down + C_{2}.altura * 0.7,
                            B.altura = B.h\_up + B.h\_down \} \\ $
 
-   \item $ B \rightarrow \textbf{\{} \{ E.x = B.x, E.y = B.y, E.tam = B.tam \} \textbf{E} \textbf{\}}ds \\
-                          \{ B.h\_up = E.h\_up, B.h\_down = E.h\_down, B.ancho = E.ancho \} \\ $
-
-  \item $ B \rightarrow \textbf{(} \{ E.x = B.x + B.tam * 0.3, E.y = B.y, E.tam = B.tam \}
+  \item $ C \rightarrow \textbf{(} \{ E.x = C.x + C.tam * 0.3, E.y = C.y, E.tam = C.tam \}
                         \textbf{E} \textbf{)} \\
                         \{
-                        B.h\_up = E.h\_up,
-                        B.h\_down = E.h\_down,
-                        B.ancho = E.ancho + 2 * B.tam * 0.3,
-                        B.altura = B.h\_down + B.h\_up \} \\ $
+                        C.h\_up = E.h\_up,
+                        C.h\_down = E.h\_down,
+                        C.ancho = E.ancho + 2 * C.tam * 0.3,
+                        C.altura = C.h\_down + C.h\_up \} \\ $
+
+  \item $ C \rightarrow \textbf{\{} \{ E.x = C.x, E.y = C.y, E.tam = C.tam \} \textbf{E} \textbf{\}} \\
+                          \{ C.h\_up = E.h\_up, C.h\_down = E.h\_down, C.ancho = E.ancho, C.altura = E.altura \} \\ $
+
+  \item $ C \rightarrow \textbf{$l$} \{ C.h\_up = 0.8 * C.tam, C.h\_down = 0.2 * C.tam,
+                              C.altura = C.\_up + C.h\_down, C.ancho = 0.6 * C.tam \} \\ $
 
 \end{itemize}
 
@@ -345,9 +344,9 @@ Para trabajar con el resto de los símbolos (no terminales), definimos los sigui
 
 Cada nodo y cada hoja tiene los mismos 7 atributos que tienen los símbolos de nuestra gramática. Para heredar y sintetizar de forma correcta dichos atributos según la TDS ya descripta, recorremos este árbol 3 veces (la primera y última de forma top-down y la segunda bottom-up). Esto lo hacemos en los siguientes 3 recorridos (etapas):
 \begin{itemize}
-  \item recorrer1: heredamos desde la raíz hasta las hojas el atributo \emph{tam}
+  \item recorrer: heredamos desde la raíz hasta las hojas el atributo \emph{tam}
   \item recorrer2: sintetizamos desde las hojas hasta la raíz los atributos \emph{altura}, \emph{ancho}, \emph{h\_up} y \emph{h\_down}, utilizando el atributo \emph{tam}, ya calculado.
-  \item recorrer3: heredamos desde la raíz hasta las hojas los atributos \emph{x} e \emph{y}, utilizando los atributos ya calculados en los dos recorridos anteriores. Como en esta etapa obtenemos el árbol decorado correctamente con todos los atributos, también aquí generamos el archivo SVG buscado.
+  \item dump_ast: heredamos desde la raíz hasta las hojas los atributos \emph{x} e \emph{y}, utilizando los atributos ya calculados en los dos recorridos anteriores. Como en esta etapa obtenemos el árbol decorado correctamente con todos los atributos, también aquí generamos el archivo SVG buscado.
 \end{itemize}
 
 \section{Resultados y casos de prueba}
@@ -355,7 +354,7 @@ Cada nodo y cada hoja tiene los mismos 7 atributos que tienen los símbolos de n
 A continuación, exponemos una serie de figuras, cada una obtenida a partir de la cadena que nombra a dicha figura.
 
 \begin{figure}[H]
-\subfloat[]{\label{duck2}%
+\subfloat[]{
   \begin{minipage}{\columnwidth}\footnotesize
   \centering
   \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej7.png}}{X\_Y\detokenize{^}ZG\detokenize{^}F\_H}
@@ -365,7 +364,7 @@ A continuación, exponemos una serie de figuras, cada una obtenida a partir de l
   \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej8.png}}{A\detokenize{^}\{BC/D\_F\detokenize{^}H\}}
   \end{minipage}}
 
-\subfloat[]{\label{duck2}%
+\subfloat[]{
   \begin{minipage}{\columnwidth}\footnotesize
   \centering
   \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej5.png}}{{x\detokenize{^}2+x+1}/2}
@@ -378,7 +377,7 @@ A continuación, exponemos una serie de figuras, cada una obtenida a partir de l
 \end{figure}
 
 \begin{figure}[H]
-\subfloat[]{\label{duck2}%
+\subfloat[]{
   \begin{minipage}{\columnwidth}\footnotesize
   \centering
   \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej16.png}}{((A/B))}
@@ -389,7 +388,7 @@ A continuación, exponemos una serie de figuras, cada una obtenida a partir de l
   \end{minipage}
 }
 
-\subfloat[]{\label{duck2}%
+\subfloat[]{
   \begin{minipage}{\columnwidth}\footnotesize
   \centering
   \subsubfloat{\includegraphics[width=0.3\columnwidth]{img/ej11.png}}{\{A+B/A\detokenize{^}2\}+A\_B/\{A\detokenize{^}B+\{C\detokenize{^}B/D\}}
