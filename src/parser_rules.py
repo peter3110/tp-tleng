@@ -6,7 +6,7 @@ import pprint
 
 def p_expression_init(subexpressions):
   'S : E'
-  subexpressions[0] = Start(subexpressions[1])
+  subexpressions[0] = Root(subexpressions[1])
 
 # E -> E / A | A
 def p_expression_E1(subexpressions):

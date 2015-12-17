@@ -325,7 +325,7 @@ A partir de estos atributos, generamos la siguiente TDS:
 
 Para implementar esta TDS, generamos para cada cadena de entrada un árbol sintáctico en el cual cada hoja está dada por el símbolo terminal $l$. Para trabajar con el resto de los símbolos (no terminales), definimos los siguientes nodos:
 \begin{itemize}
-  \item START: es el nodo raíz. Allí inicializamos el tamaño inicial de la subexpresión, y calculamos la posición $y$ de la expresión para que posteriormente quede centrada en el espacio donde la dibujamos. Tiene 1 hijo.
+  \item ROOT: es el nodo raíz. Allí inicializamos el tamaño inicial de la subexpresión, y calculamos la posición $y$ de la expresión para que posteriormente quede centrada en el espacio donde la dibujamos. Tiene 1 hijo.
   \item (): para caracterizar a la subexpresión contenida entre las ER `` ( '' y `` ) ''. Cuenta con 1 hijo
   \item CONCAT: para caracterizar la concatenación de dos subexpresiones válidas. Cuenta con 2 hijos
   \item SUPERINDEX: para caracterizar dos subexpresiones unidas por la ER \detokenize{^}. Cuenta con 2 hijos
