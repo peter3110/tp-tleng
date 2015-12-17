@@ -1,6 +1,8 @@
 k1 = 0.6
 k2 = 0.6
 c = 0.1
+j = 1.3
+jj = 0.2
 
 def initialize_atts(obj):
   obj.tam = 0
@@ -16,12 +18,6 @@ def make_text(x,y,tam,char):
 
 def make_line(x1,y1,x2,y2,ancho):
   return '''<line x1="''' + x1 + '''" y1="''' + y1 + '''" x2="''' + x2 + '''" y2="''' + y2 + '''" stroke-width="''' + ancho + '''" stroke="black"/>'''
-
-def make_open_paren(x,y,tam,t1,t2,s1,s2):
-  return '''<text x="''' + x + '''" y="''' + y + '''" font-size="''' + tam + '''" transform="translate(''' + t1 + ''',''' + t2 + ''') scale(''' + s1 + ''',''' + s2 + ''')">(</text>'''
-
-def make_close_paren(x,y,tam,t1,t2,s1,s2):
-  return '''<text x="''' + x + '''" y="''' + y + '''" font-size="''' + tam + '''" transform="translate(''' + t1 + ''',''' + t2 + ''') scale(''' + s1 + ''',''' + s2 + ''')">)</text>'''
 
 class Start(object):
   def __init__(self, hijo):
@@ -296,13 +292,14 @@ class SubSuperIndex(object):
     self.base.y = self.y
     self.base.dump_ast(out)
 
+    self.sub_index.x = self.base.x + self.base.ancho
+    self.sub_index.y = self.base.y + (self.sub_index.h_up)
+    self.sub_index.dump_ast(out)
+
     self.super_index.x = self.base.x + self.base.ancho
     self.super_index.y = self.base.y - (self.super_index.h_down + self.base.tam * 0.5)
     self.super_index.dump_ast(out)
 
-    self.sub_index.x = self.base.x + self.base.ancho
-    self.sub_index.y = self.base.y + (self.sub_index.h_up)
-    self.sub_index.dump_ast(out)
 
 
 
@@ -323,18 +320,27 @@ class Parenthesis(object):
 
   def recorrer2(self):
     self.content.recorrer2()
-    self.ancho = self.content.ancho
+    self.ancho = self.content.ancho + (2 * self.tam * k1)
     self.h_up = self.content.h_up
     self.h_down = self.content.h_down
+    self.altura = self.h_down + self.h_up
 
   def dump_ast(self, out):
-    self.content.x = self.x
+    self.content.x = self.x + self.tam * k1
     self.content.y = self.y
-    out.append( make_open_paren(str(0), str(0), str(1), str(self.x - 0.45),str(self.y + self.h_up * 0.6),
-                                str(1), str(self.tam * 1) ) )
+
+    out.append( make_open_paren(str(0), str(0), str(1), str(self.x),str(self.y + self.h_down - jj * self.altura * j),
+                                str(1), str(self.altura * j) ) )
     self.content.dump_ast(out)
-    out.append( make_close_paren( str(0), str(0), str(1), str(self.x + self.ancho - 0.15),str(self.y + self.h_up * 0.6),
-                                str(1), str(self.tam * 1)) )
+    out.append( make_close_paren( str(0), str(0), str(1), str(self.x + self.ancho - self.tam * k1), str(self.y + self.h_down - jj * self.altura * j),
+                                str(1), str(self.altura * j)) )
+
+def make_open_paren(x,y,tam,t1,t2,s1,s2):
+  return '''<text x="''' + x + '''" y="''' + y + '''" font-size="''' + tam + '''" transform="translate(''' + t1 + ''',''' + t2 + ''') scale(''' + s1 + ''',''' + s2 + ''')">(</text>'''
+
+def make_close_paren(x,y,tam,t1,t2,s1,s2):
+  return '''<text x="''' + x + '''" y="''' + y + '''" font-size="''' + tam + '''" transform="translate(''' + t1 + ''',''' + t2 + ''') scale(''' + s1 + ''',''' + s2 + ''')">)</text>'''
+
 
 class Id(object):
   def __init__(self, value):
