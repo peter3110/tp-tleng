@@ -119,7 +119,7 @@ class Concat(object):
     self.left.recorrer2()
     self.right.recorrer2()
     self.ancho = self.left.ancho + self.right.ancho
-    # CHECK CHECK
+
     self.h_up = max(self.left.h_up, self.right.h_up)
     self.h_down = max(self.left.h_down, self.right.h_down)
     self.altura = self.h_down + self.h_up
@@ -158,7 +158,7 @@ class SuperIndex(object):
     self.base.recorrer2()
     self.index.recorrer2()
     self.ancho = self.base.ancho + self.index.ancho
-    # CHECK CHECK
+
     self.h_up = self.base.h_up + self.index.altura * 0.7
     self.h_down = self.base.h_down
     self.altura = self.h_down + self.h_up
@@ -199,7 +199,7 @@ class SubIndex(object):
     self.base.recorrer2()
     self.index.recorrer2()
     self.ancho = self.base.ancho + self.index.ancho
-    # CHECK CHECK
+
     self.h_up = self.base.h_up
     self.h_down = self.base.h_down + self.index.altura * 0.7
     self.altura = self.h_up + self.h_down
@@ -242,7 +242,7 @@ class SuperSubIndex(object):
     self.super_index.recorrer2()
     self.sub_index.recorrer2()
     self.ancho = self.base.ancho + max(self.super_index.ancho, self.sub_index.ancho)
-    # CHECK CHECK
+
     self.h_up = self.base.h_up + self.super_index.altura * 0.7
     self.h_down = self.base.h_down + self.sub_index.altura * 0.7
     self.altura = self.h_up + self.h_down
@@ -288,7 +288,7 @@ class SubSuperIndex(object):
     self.super_index.recorrer2()
     self.sub_index.recorrer2()
     self.ancho = self.base.ancho + max(self.super_index.ancho, self.sub_index.ancho)
-    # CHECK CHECK
+
     self.h_up = self.base.h_up + self.super_index.altura * 0.7
     self.h_down = self.base.h_down + self.sub_index.altura * 0.7
     self.altura = self.h_up + self.h_down
