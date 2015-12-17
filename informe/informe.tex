@@ -251,7 +251,8 @@ A partir de estos atributos, generamos la siguiente TDS:
                            E_{1}.ancho = max(E_{2}.ancho, A.ancho),
                            E_{1}.altura = E_{1}.h\_up + E_{1}.h\_down \} \\ $
 
-  \item $ E   \rightarrow \{ A.tam = E.tam, A.x = E.x, A.y = E.y \} \textbf{A} \\ $
+  \item $ E   \rightarrow \{ A.tam = E.tam, A.x = E.x, A.y = E.y \} \textbf{A} \\
+                          \{ E.ancho = A.ancho, E.h\_up = A.h\_up, E.h\_down = A.h\_down, E.altura = A.altura\} \\ $
 
   \item $ A_1 \rightarrow \{ A_{2}.tam = A_{1}.tam, A_{2}.x = A_{1}.x, A_{2}.y = A_{1}.y \} \textbf{A}_2 \\
                           \{ B.tam = 1, B.x = A_{2}.x + A_{2}.ancho, B.y = A_{1}.y \} \textbf{B} \\
@@ -260,14 +261,14 @@ A partir de estos atributos, generamos la siguiente TDS:
                              A_{1}.ancho = A_{2}.ancho + B.ancho,
                              A_{1}.altura = A_{1}.h\_up + A_{1}.h\_down \} \\ $
 
-  \item $ A   \rightarrow \{ B.tam = 1, B.x = A.x, B.y = A.y \} \textbf{B} \\
+  \item $ A   \rightarrow \{ B.tam = A.tam, B.x = A.x, B.y = A.y \} \textbf{B} \\
                           \{ A.h\_up = B.h\_up,
                              A.h\_down = B.h\_down,
                              A.altura = B.altura,
                              A.ancho = B.ancho \} \\ $
 
   \item $ B \rightarrow \{ C.tam = B.tam, C.x = B.x, C.y = B.y \} \textbf{C} \\
-                        \{ B.ancho = C.ancho, B.h\_up = C.h\_up, B.h\_down = C.h\_down \} \\ $
+                        \{ B.ancho = C.ancho, B.h\_up = C.h\_up, B.h\_down = C.h\_down, B.altura = C.altura\} \\ $
 
   \item $ B \rightarrow \{ C_{1}.tam = B.tam, C_{1}.x = B.x, C_{1}.y = B.y \} \textbf{C}_1 \detokenize{^} \\
                         \{ C_{2}.tam = C_{1}.tam * 0.7, C_{2}.x = C_{1}.x + C_{1}.ancho,
@@ -312,12 +313,12 @@ A partir de estos atributos, generamos la siguiente TDS:
                            B.h\_down = C_{1}.h\_down + C_{2}.altura * 0.7,
                            B.altura = B.h\_up + B.h\_down \} \\ $
 
-  \item $ C \rightarrow \textbf{(} \{ E.x = C.x + C.tam * 0.3, E.y = C.y, E.tam = C.tam \}
+  \item $ C \rightarrow \textbf{(} \{ E.x = C.x + C.tam * 0.6, E.y = C.y, E.tam = C.tam \}
                         \textbf{E} \textbf{)} \\
                         \{
                         C.h\_up = E.h\_up,
                         C.h\_down = E.h\_down,
-                        C.ancho = E.ancho + 2 * C.tam * 0.3,
+                        C.ancho = E.ancho + 2 * C.tam * 0.6,
                         C.altura = C.h\_down + C.h\_up \} \\ $
 
   \item $ C \rightarrow \textbf{\{} \{ E.x = C.x, E.y = C.y, E.tam = C.tam \} \textbf{E} \textbf{\}} \\
